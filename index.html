@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Starlog · HSR showcase</title>
+<title>The Express Log · HSR showcase</title>
 <style>
   :root {
     --space:   #0c0f1d;
@@ -169,7 +169,7 @@
   #tl, #cs { display: none; }
   #tl.show { display: block; }
   #cs.show { display: flex; flex-direction: column; flex: 1; min-height: 0; }
-  #tl.show + #cs.show { margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--line-dim); }
+  #tl.show + #cs.show { margin-top: 18px; }
   /* must come after the .pcard / pane-card rules above — same specificity,
      so source order is what lets these overrides win */
   @media (max-width: 860px) {
@@ -296,7 +296,17 @@
     transition: transform 0.12s ease, box-shadow 0.12s ease;
   }
   .char-card.r4 { border-bottom-color: #8f6fd1; }
+  /* an unfilled showcase slot — kept so the grid stays the in-game
+     3-support/5-display size instead of shrinking to whatever a profile
+     actually set */
+  .char-card.blank {
+    cursor: default;
+    background: rgba(255, 255, 255, 0.02);
+    border-style: dashed;
+    border-bottom: 1px dashed var(--line-dim);
+  }
   .char-card:hover { transform: translateY(-2px); }
+  .char-card.blank:hover { transform: none; }
   .char-card[aria-pressed="true"] { border-color: var(--gold-hi); box-shadow: 0 0 0 2px rgba(217, 176, 108, 0.25); }
   @media (prefers-reduced-motion: reduce) { .char-card { transition: none; } .char-card:hover { transform: none; } }
   /* companions run taller than support cards (2/3 vs 4/5) so the row fills
@@ -314,11 +324,11 @@
   .char-card .cc-name {
     display: block;
     padding: 6px 7px 1px;
-    font-size: 13px; color: var(--ink);
+    font-size: 15px; color: var(--ink);
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
-  .char-cards.big .cc-name { font-size: 14px; }
-  .char-card .cc-lv { display: block; padding-bottom: 7px; font-size: 11px; color: var(--muted); font-family: var(--mono); }
+  .char-cards.big .cc-name { font-size: 16px; }
+  .char-card .cc-lv { display: block; padding-bottom: 7px; font-size: 13px; color: var(--muted); font-family: var(--mono); }
 
   .avatar-wrap { position: relative; width: 96px; height: 96px; flex: none; }
   .avatar-wrap .avatar {
@@ -350,23 +360,33 @@
     border: 1px solid var(--line);
     border-radius: 14px;
     padding: 16px 18px 14px;
+    /* fills the same fixed height as the roster/battle-records panes (see
+       .pane > .collection), so the card rows stretch to fill it instead
+       of leaving empty space below a content-sized grid */
+    display: flex;
+    flex-direction: column;
   }
-  .col-tall { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
-  .col-wide { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-top: 12px; }
+  /* the two card rows share whatever height is left after the footer,
+     each card then stretching (grid's default align-items) to match */
+  #col-cards { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 12px; }
+  .col-tall { flex: 1.4; display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+  .col-wide { flex: 0.8; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
   .col-card {
     background: linear-gradient(180deg, #262b41, #171b2c);
     border: 1px solid var(--line-dim);
     border-radius: 12px;
   }
   .col-card img { opacity: 0.75; }
-  .col-card .cname { font-size: 14px; color: var(--ink-2); }
-  .col-card .cnum { font-family: var(--mono); font-size: 28px; font-weight: 600; color: var(--ink); }
-  .col-card.tall { padding: 30px 10px 22px; text-align: center; }
-  .col-card.tall img { width: 88px; height: 88px; display: block; margin: 0 auto 16px; }
+  .col-card .cname { font-size: 16px; color: var(--ink-2); }
+  .col-card .cnum { font-family: var(--mono); font-size: 34px; font-weight: 600; color: var(--ink); }
+  .col-card.tall {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 16px 10px; text-align: center;
+  }
+  .col-card.tall img { width: 108px; height: 108px; display: block; margin: 0 auto 26px; }
   .col-card.tall .cnum { margin-top: 2px; }
-  .col-card.wide { display: flex; align-items: center; gap: 18px; padding: 18px 22px; }
-  .col-card.wide img { width: 54px; height: 54px; flex: none; }
-  .col-foot { margin-top: 14px; font-size: 13px; color: var(--muted); }
+  .col-card.wide { display: flex; align-items: center; gap: 30px; padding: 18px 22px 18px 48px; }
+  .col-card.wide img { width: 108px; height: 108px; flex: none; }
 
   /* ---------- activity feed ---------- */
   .activity {
@@ -410,28 +430,32 @@
     background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(0, 0, 0, 0.22));
     border: 1px solid var(--line-dim);
     border-radius: 12px;
-    /* visible, not hidden: the medallion is positioned to spill past
-       th-main's bottom edge and overlap the "Go View" bar below it */
-    overflow: visible;
     cursor: pointer;
     text-align: left;
   }
   .tl-hero-card[aria-pressed="true"] { border-color: var(--gold-hi); box-shadow: 0 0 0 2px rgba(217, 176, 108, 0.22); }
-  .th-main { display: flex; align-items: center; gap: 16px; padding: 12px 18px 12px 112px; flex-wrap: wrap; }
+  .th-main { display: flex; align-items: center; gap: 16px; padding: 12px 18px 12px 210px; flex-wrap: wrap; }
+  /* same trick as the Cosmic Strife hero cards: inset past the card's own
+     border so the icon can paint over that border where it cuts into the
+     top/bottom, instead of being clipped a hair short of it */
+  .th-icon-clip {
+    position: absolute; inset: -4px;
+    border-radius: 12px;
+    overflow: hidden;
+    pointer-events: none;
+  }
   .th-icon {
     position: absolute;
-    /* anchored to the card's bottom edge (where the "Go View" bar always
-       sits) rather than the top, so the overlap holds even when th-main
-       wraps to two lines at narrow widths */
-    left: 14px; bottom: 6px;
-    width: 92px; height: 92px;
-    z-index: 2;
+    left: 30px; top: 50%;
+    transform: translateY(-50%);
+    width: 150px; height: 150px;
     border-radius: 50%;
-    background: var(--panel-2);
-    border: 1px solid var(--line-dim);
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.35);
-    object-fit: contain;
+    display: flex; align-items: center; justify-content: center;
+    /* matches the outer panel behind the card, so it reads as a hole
+       punched through to it rather than a medallion sitting on top */
+    background: var(--panel);
   }
+  .th-icon img { width: 118px; height: 118px; object-fit: contain; }
   .th-name { font-family: var(--display); font-size: 19px; letter-spacing: 0.04em; color: var(--ink); }
   .th-pips { margin-top: 6px; font-size: 17px; letter-spacing: 4px; }
   .th-pips .pip { color: #4a5170; }
@@ -444,17 +468,23 @@
   }
   .th-num b { font-family: var(--mono); font-size: 35px; font-weight: 600; color: var(--ink); }
   .th-num span { font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
-  .th-rank { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--ink-2); }
-  .th-rank img { height: 22px; }
   .th-go {
     display: flex; justify-content: flex-end;
     padding: 6px 16px;
-    /* the card no longer clips to its radius (th-icon spills past it), so
-       this bottom bar rounds its own corners to match */
+    /* this bottom bar is a visually separate section within the card, so
+       it rounds its own bottom corners to match the card's own radius */
     border-radius: 0 0 11px 11px;
     background: linear-gradient(90deg, rgba(232, 221, 196, 0.12), rgba(232, 221, 196, 0.88));
     color: #1b2036;
     font-size: 13.5px; font-weight: 600; letter-spacing: 0.04em;
+  }
+  /* no dimming here (unlike .tl-tile.no-data below) — the "no rank yet"
+     icon HoYoLAB returns is already a faint, near-transparent placeholder,
+     and dimming it further makes it disappear against the dark card */
+  .th-nodata {
+    margin-top: 6px;
+    font-size: 12px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--muted);
   }
 
   /* mode tiles: the three medal cards under the hero */
@@ -470,10 +500,6 @@
     text-align: center;
   }
   .tl-tile[aria-pressed="true"] { border-color: var(--gold-hi); box-shadow: 0 0 0 2px rgba(217, 176, 108, 0.22); }
-  .tl-tile .tt-zoom {
-    position: absolute; top: 7px; right: 9px;
-    font-size: 16px; color: var(--muted);
-  }
   .tl-tile .tt-name {
     display: block;
     padding: 12px 26px 0;
@@ -502,10 +528,15 @@
   .tl-tile .tt-bar img { width: 15px; height: 15px; opacity: 0.85; }
   .tl-tile .tt-bar .stars { color: var(--r5); letter-spacing: 1px; }
   .tl-tile .tt-bar .sw { color: var(--gold-hi); }
+  .tl-tile.no-data .tt-medal { opacity: 0.4; filter: grayscale(1); }
+  .tl-tile.no-data .tt-bar.tt-nodata {
+    font-family: var(--body); font-size: 12px; font-weight: 600;
+    letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted);
+  }
 
   /* lives in its own "Battle Stats" card now, so no separator needed */
   .tl-detail { margin-top: 2px; }
-  .tl-detail-head { display: flex; justify-content: flex-end; padding-bottom: 6px; }
+  .tl-detail-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; padding-bottom: 6px; }
   .tl-cycles { display: flex; gap: 6px; flex-wrap: wrap; }
   .tl-cycles button {
     font-size: 13px;
@@ -523,33 +554,55 @@
 
   /* ---------- cosmic strife: seasonal hero rows + expansion medal tiles,
      mirroring the in-game panel's two-tier layout ---------- */
-  .cs-heroes { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); align-content: stretch; gap: 10px; margin-bottom: 12px; flex: 1; min-height: 0; }
+  .cs-heroes { display: grid; grid-template-columns: 1fr; align-content: stretch; gap: 10px; margin-bottom: 12px; flex: 1; min-height: 0; }
   .cs-hero-row {
-    display: flex; align-items: center; gap: 14px;
-    padding: 12px 16px;
+    position: relative;
+    display: flex; align-items: center;
+    padding: 14px 16px 14px 212px;
     background: linear-gradient(180deg, #232841, #171b2c);
     border: 1px solid var(--line-dim);
     border-radius: 12px;
   }
-  .cs-hero-row .chr-icon {
-    flex: none; width: 54px; height: 54px; border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    background: radial-gradient(circle at 50% 38%, #4f63b8, #24305c 72%);
-    border: 2px solid rgba(217, 176, 108, 0.55);
-    box-shadow: inset 0 0 16px rgba(0, 0, 0, 0.5);
+  /* clips the icon on its own — inset past the card's own border (not
+     flush with it) so the icon paints over that border where it cuts
+     into the top/bottom instead of stopping just short of it */
+  .chr-icon-clip {
+    position: absolute; inset: -4px;
+    border-radius: 12px;
+    overflow: hidden;
+    pointer-events: none;
   }
-  .cs-hero-row .chr-icon img { width: 30px; height: 30px; opacity: 0.95; }
+  .cs-hero-row .chr-icon {
+    position: absolute; left: 30px; top: 50%;
+    transform: translateY(-50%);
+    flex: none; width: 150px; height: 150px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    /* matches the outer panel behind the card (not the card's own
+       gradient), so it reads as a hole punched through to it */
+    background: var(--panel);
+  }
+  .cs-hero-row .chr-icon img { display: block; width: 92px; height: 92px; object-fit: contain; opacity: 0.95; }
+  .cs-hero-row .chr-icon.cw img { width: 80px; height: 80px; }
   .cs-hero-row .chr-main { flex: 1; min-width: 0; }
-  .cs-hero-row .chr-sub { font-size: 10.5px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
-  .cs-hero-row .chr-name { margin-top: 2px; font-family: var(--display); font-size: 17px; color: var(--ink); }
-  .cs-hero-row .chr-badge {
-    flex: none;
-    font-family: var(--mono); font-size: 12px; color: var(--gold-hi);
-    background: rgba(217, 176, 108, 0.12);
-    border: 1px solid rgba(217, 176, 108, 0.35);
+  .cs-hero-row .chr-name { font-family: var(--display); font-size: 18px; font-weight: 600; letter-spacing: 0.02em; color: var(--ink); }
+  .cs-hero-row .chr-rank { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
+  .cs-hero-row .chr-rank-label { font-size: 12.5px; color: var(--ink-2); }
+  .cs-hero-row .chr-rank-chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-family: var(--mono); font-size: 12px; font-weight: 600; color: #1b2036;
+    background: linear-gradient(90deg, rgba(232, 221, 196, 0.82), rgba(217, 176, 108, 0.92));
     border-radius: 999px;
-    padding: 5px 12px;
+    padding: 3px 10px 3px 4px;
     white-space: nowrap;
+  }
+  /* recolored via mask instead of shown as-is, so it always matches the
+     chip's own text color rather than the icon's native art colors */
+  .cs-hero-row .chr-rank-icon {
+    flex: none; width: 17px; height: 17px;
+    background-color: currentColor;
+    -webkit-mask-size: contain; mask-size: contain;
+    -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
+    -webkit-mask-position: center; mask-position: center;
   }
   .cs-tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
   .cs-tile {
@@ -595,9 +648,11 @@
     width: 36px; height: 36px; border-radius: 50%;
     border: 1px solid var(--line-dim);
     background: var(--panel-2);
+    object-fit: cover; object-position: top;
   }
   .boss .bl { display: block; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
   .boss .bn { font-size: 13px; color: var(--ink-2); }
+  .boss .bstars { display: block; font-size: 11px; letter-spacing: 1px; color: var(--r5); }
   .boss.tierce img { border-color: var(--gold); }
   .boss.tierce .bl, .boss.tierce .bn { color: var(--gold-hi); }
   .boss img.glyph { padding: 8px; }
@@ -613,7 +668,7 @@
     margin-left: 8px;
     white-space: nowrap;
   }
-  .moc-sum { display: flex; gap: 22px; flex-wrap: wrap; padding: 2px 0 6px; font-size: 13px; color: var(--ink-2); }
+  .moc-sum { display: flex; gap: 22px; flex-wrap: wrap; font-size: 13px; color: var(--ink-2); }
   .moc-sum b { color: var(--gold-hi); font-family: var(--mono); font-weight: 600; }
   .moc-row { flex-wrap: wrap; }
   .moc-row .floor { min-width: 215px; color: var(--ink); }
@@ -632,15 +687,17 @@
     padding: 10px 12px 11px;
   }
   .team-card.tierce { border-color: var(--gold); }
-  .team-card .tc-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
+  .team-card .tc-head { display: flex; align-items: baseline; gap: 8px; margin-bottom: 8px; }
   .team-card .tc-label { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
   .team-card.tierce .tc-label { color: var(--gold-hi); }
-  .team-card .tc-meta { font-family: var(--mono); font-size: 12px; color: var(--muted); white-space: nowrap; }
+  .team-card .tc-head .stars-sm { font-size: 12px; }
+  .team-card .tc-head .stars-sm .dim { color: #4a5170; }
+  .team-card .tc-meta { margin-left: auto; font-family: var(--mono); font-size: 12px; color: var(--muted); white-space: nowrap; }
   .tc-roster { display: flex; gap: 9px; flex-wrap: wrap; }
   .tc-av { display: flex; flex-direction: column; align-items: center; gap: 3px; flex: none; }
   /* hoyolab icons are 160x188 bust portraits; crop to the top square (the face)
      instead of squashing them into the circle */
-  .tc-av img { width: 34px; height: 34px; object-fit: cover; object-position: top; border-radius: 50%; background: var(--panel-2); border: 1px solid var(--line-dim); }
+  .tc-av img { width: 40px; height: 40px; object-fit: cover; object-position: top; border-radius: 50%; background: var(--panel-2); border: 1px solid var(--line-dim); }
   .tc-av span { font-family: var(--mono); font-size: 10.5px; color: var(--muted); white-space: nowrap; }
   .tc-buff { display: flex; align-items: center; gap: 6px; margin-top: 9px; font-size: 12px; color: var(--ink-2); }
   .tc-buff img { width: 18px; height: 18px; opacity: 0.9; }
@@ -807,7 +864,7 @@
   .tn.off { opacity: 0.3; }
   .tn .tn-lv {
     position: absolute; bottom: -7px; right: -7px;
-    font-family: var(--mono); font-size: 10px; font-weight: 600;
+    font-family: var(--mono); font-size: 12px; font-weight: 600;
     color: var(--gold-hi);
     background: var(--space);
     border: 1px solid var(--line);
@@ -893,25 +950,35 @@
      Hands/Feet/Orb, not however many happen to fit per row */
   .relics { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-top: 18px; }
   .relic {
+    position: relative;
     background: var(--panel-2);
     border: 1px solid var(--line-dim);
     border-radius: 9px;
     padding: 10px 12px;
+    min-height: 220px;
+    /* leftover height (min-height, or row-stretch to match a taller
+       sibling relic) splits evenly above/between/below the two blocks
+       instead of collecting entirely in one gap */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
   }
-  /* main stat + level across the top; icon and subs in two columns below */
-  .relic .top { display: flex; align-items: baseline; gap: 8px; margin-bottom: 8px; }
-  .relic .mk { font-size: 12px; color: var(--ink-2); }
-  .relic .mv { font-family: var(--mono); font-size: 14px; font-weight: 600; }
-  .relic .lv { margin-left: auto; font-family: var(--mono); font-size: 11px; color: var(--muted); }
-  .relic .body { display: flex; gap: 10px; align-items: center; }
-  .relic .body img { width: 56px; height: 56px; flex: none; }
-  .relic .subs { flex: 1; min-width: 0; }
+  /* icon + main stat + level all in one row up top; subs run full-width below */
+  .relic .top { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+  .relic .top img { width: 48px; height: 48px; flex: none; }
+  .relic .mk { font-size: 14px; color: var(--ink-2); }
+  .relic .mv { margin-left: auto; font-family: var(--mono); font-size: 17px; font-weight: 600; }
+  .relic .lv {
+    position: absolute; top: 8px; right: 10px;
+    font-family: var(--mono); font-size: 13px; color: var(--muted);
+  }
   .relic .lv.r5 { color: var(--r5); }
   .relic .lv.r4 { color: var(--r4); }
   /* one sub-stat per row: name | roll arrows | value, the arrow and value
      columns shared across rows so they align */
   .relic .subs {
-    font-size: 12px; color: var(--muted); line-height: 1.65;
+    min-width: 0;
+    font-size: 14px; color: var(--muted); line-height: 1.65;
     display: grid; grid-template-columns: minmax(0, 1fr) auto auto;
     gap: 0 10px; align-items: center;
     white-space: nowrap;
@@ -920,10 +987,8 @@
      columns past the card edge */
   .relic .subs > span { overflow: hidden; text-overflow: ellipsis; }
   .relic .subs b { text-align: right; }
-  /* upgrade rolls as one ">" each, tinted by how high the rolls landed */
-  .relic .subs .rolls { font-style: normal; font-family: var(--mono); font-size: 11px; text-align: right; color: var(--muted); cursor: default; }
-  .relic .subs .rolls.mid { color: var(--ink-2); }
-  .relic .subs .rolls.hi { color: var(--gold-hi); }
+  /* upgrade rolls as one ">" each */
+  .relic .subs .rolls { font-style: normal; font-family: var(--mono); font-size: 11px; text-align: right; color: var(--gold-hi); cursor: default; }
   .relic .subs b { font-family: var(--mono); font-weight: 500; color: var(--ink-2); }
 
   footer { margin-top: 30px; font-size: 12px; color: var(--muted); }
@@ -934,7 +999,7 @@
 <div class="app">
 
   <header>
-    <div class="wordmark">Starlog</div>
+    <div class="wordmark">The Express Log</div>
     <form class="uid-form" id="form">
       <input id="uid" inputmode="numeric" pattern="[0-9]{9,10}" placeholder="UID · e.g. 800333171" required>
       <button id="go">View</button>
@@ -984,7 +1049,7 @@
     <div class="pane">
     <section class="roster" id="roster">
       <div id="sec-support">
-        <h4>✦ Support Character</h4>
+        <h4>✦ Support Characters</h4>
         <div class="char-cards big" id="cards-support"></div>
       </div>
       <div id="sec-display">
@@ -1011,7 +1076,6 @@
 
     <section class="collection" id="collection">
       <div id="col-cards"></div>
-      <div class="col-foot">👁 Showcased Collection · <span id="col-extra"></span></div>
     </section>
     </div>
   </div>
@@ -1020,9 +1084,9 @@
     <h3>Battle Stats</h3>
     <div class="tl-detail">
       <div class="tl-detail-head">
+        <div class="moc-sum" id="tl-sum"></div>
         <span class="tl-cycles" id="tl-cycles" role="tablist" aria-label="Cycle"></span>
       </div>
-      <div class="moc-sum" id="tl-sum"></div>
       <div class="boss-strip" id="tl-bosses"></div>
       <div id="tl-rows"></div>
     </div>
@@ -1398,17 +1462,20 @@ async function load(uid) {
     }
     history.replaceState(null, "", "#" + uid);
     localStorage.setItem("starlog.uid", uid);
+    // raw profile (assist/display slot split, on failure everything lands in
+    // one group), activity, and treasures all load together rather than the
+    // showcase revealing itself after just the first — so the page appears
+    // once, fully populated, instead of panels popping in one by one
+    await Promise.allSettled([loadRawProfile(uid), loadActivity(uid), loadTreasures(uid)]);
     renderPlayer(data.player);
-    // the raw endpoint tells support (assist) slots apart from display slots,
-    // so the roster waits for it; on failure everything lands in one group
-    await loadRawProfile(uid);
     renderRoster(data.characters);
-    selectChar(0);
+    // no default selection — the detail card stays hidden until a
+    // character is actually clicked, resetting any state left over from
+    // a previously loaded UID
+    $("detail").classList.remove("show");
     notice(null);
     $("view-tabs").classList.add("show");
     applyView();
-    loadActivity(uid);
-    loadTreasures(uid);
   } catch (e) {
     $("player").classList.remove("show");
     $("activity").classList.remove("show");
@@ -1473,19 +1540,22 @@ function renderPlayer(p) {
     ["Phonograph", s.light_cone_count, "JukeboxIcon"],
     ["Bookshelf", s.book_count, "BookIcon"],
   ];
+  // omit a row's wrapper entirely when it has nothing to show — with
+  // #col-cards giving each row flex:1 to fill the pane's height, an empty
+  // wrapper would otherwise still claim its share as blank space
+  const tallCards = tall.filter(([, v]) => v != null);
+  const wideCards = wide.filter(([, v]) => v != null);
   $("col-cards").innerHTML =
-    `<div class="col-tall">${tall
-      .filter(([, v]) => v != null)
-      .map(([k, v, ic]) => `<div class="col-card tall"><img src="${sign(ic)}" alt=""><div class="cname">${k}</div><div class="cnum">${v}</div></div>`)
-      .join("")}</div>` +
-    `<div class="col-wide">${wide
-      .filter(([, v]) => v != null)
-      .map(([k, v, ic]) => `<div class="col-card wide"><img src="${sign(ic)}" alt=""><span><span class="cname">${k}</span><div class="cnum">${v}</div></span></div>`)
-      .join("")}</div>`;
-  $("col-extra").textContent =
-    [s.relic_count != null && `${s.relic_count} relics`, s.universe_level && `Simulated Universe World ${s.universe_level}`]
-      .filter(Boolean)
-      .join(" · ");
+    (tallCards.length
+      ? `<div class="col-tall">${tallCards
+          .map(([k, v, ic]) => `<div class="col-card tall"><img src="${sign(ic)}" alt=""><div class="cname">${k}</div><div class="cnum">${v}</div></div>`)
+          .join("")}</div>`
+      : "") +
+    (wideCards.length
+      ? `<div class="col-wide">${wideCards
+          .map(([k, v, ic]) => `<div class="col-card wide"><img src="${sign(ic)}" alt=""><span><span class="cname">${k}</span><div class="cnum">${v}</div></span></div>`)
+          .join("")}</div>`
+      : "");
   $("player").classList.add("show");
 }
 
@@ -1545,6 +1615,7 @@ async function loadTreasures(uid) {
   tlData = { aa: {}, moc: {}, pf: {}, as: {} };
   csData = {};
   tlCycle = "1";
+  tlKind = null;
   const kinds = ["aa", "moc", "pf", "as"];
   // base Simulated Universe worlds aren't part of this panel in-game — only
   // Currency Wars (internal name: Grid Fight), Divergent Universe, and the
@@ -1557,10 +1628,10 @@ async function loadTreasures(uid) {
         const res = await fetch(`/api/challenge/${k}/${uid}?schedule=${c}`);
         if (!res.ok) return;
         const { retcode, data } = await res.json();
-        if (k === "aa") {
-          if (retcode === 0 && data?.challenge_peak_records?.some((r) => r.has_challenge_record))
-            tlData.aa["1"] = data;
-        } else if (retcode === 0 && data?.has_data) tlData[k][c] = data;
+        // stored whenever the query itself succeeded, even with zero
+        // attempts — an untouched mode still gets its own tile/hero
+        // (rendered as "No Data") instead of vanishing from the row
+        if (retcode === 0 && data) tlData[k][c] = data;
       })
     ),
     ...csKinds.map(async (k) => {
@@ -1570,15 +1641,13 @@ async function loadTreasures(uid) {
       if (retcode === 0 && data) csData[k] = data;
     }),
   ]);
-  const available = kinds.filter((k) => tlData[k]["1"] || tlData[k]["2"]);
+  const queried = kinds.filter((k) => tlData[k]["1"] || tlData[k]["2"]);
   const hasCS = buildCSOverview();
-  if (!available.length && !hasCS) { applyView(); return; }
-  if (available.length) {
-    buildTLOverview();
-    renderTL(available[0]);
-  }
-  $("tl").classList.toggle("show", available.length > 0);
-  $("tl-stats").classList.toggle("show", available.length > 0);
+  if (!queried.length && !hasCS) { applyView(); return; }
+  // no default selection — the tiles/hero render, but the Battle Stats
+  // card stays hidden (see renderTL) until one is actually clicked
+  if (queried.length) buildTLOverview();
+  $("tl").classList.toggle("show", queried.length > 0);
   $("cs").classList.toggle("show", hasCS);
   $("endgame").classList.add("show");
   applyView();
@@ -1589,31 +1658,44 @@ async function loadTreasures(uid) {
    then a medal tile per Expansion Module story. Currency Wars turned out to
    be internally named "Grid Fight" (found by sniffing hoyolab's own web app
    bundle, not by guessing endpoint names — /hkrpg/api/grid_fight). */
-const CS_GLYPHS = { du: "DailyQuestRogueTournIcon" };
+const CS_GLYPHS = { cw: "GridFightIcon", du: "DailyQuestRogueTournIcon" };
+
+// mihomo/hoyolab expose a rank badge per mode (division for Currency Wars,
+// season title for Divergent Universe) but no season branding name (e.g.
+// "Zero-Sum Game") — the card leads with the mode name instead and treats
+// the badge as a "Current Rank" chip, mirroring the in-game card's layout
+// without inventing text we don't actually have.
+function csHeroCard(kind, icon, title, rankLabel, rankIcon, rankText) {
+  return `<div class="cs-hero-row">
+      <div class="chr-icon-clip"><span class="chr-icon ${kind}"><img src="${icon}" alt=""></span></div>
+      <div class="chr-main">
+        <div class="chr-name">${title}</div>
+        <div class="chr-rank">
+          <span class="chr-rank-label">${rankLabel}</span>
+          <span class="chr-rank-chip"><span class="chr-rank-icon" style="-webkit-mask-image:url('${rankIcon}');mask-image:url('${rankIcon}')"></span>${rankText}</span>
+        </div>
+      </div>
+    </div>`;
+}
 
 function buildCSOverview() {
   const heroes = [];
   const cw = csData.cw?.grid_fight_brief;
   if (cw?.has_played) {
-    heroes.push(`<div class="cs-hero-row">
-        <span class="chr-icon"><img src="${cw.division.icon}" alt=""></span>
-        <div class="chr-main">
-          <div class="chr-sub">Currency Wars</div>
-          <div class="chr-name">${cw.division.name_with_num}</div>
-        </div>
-        <span class="chr-badge">Weekly ${cw.weekly_score_cur}/${cw.weekly_score_max}</span>
-      </div>`);
+    heroes.push(csHeroCard(
+      "cw", cw.division.icon, "Currency Wars", "Current Rank",
+      `${ASSETS}icon/sign/${CS_GLYPHS.cw}.png`, cw.division.name_with_num
+    ));
   }
   const du = csData.du?.basic;
   if (du?.normal_record_brief?.common_info_v2?.exist_data || Number(du?.season_level) > 0) {
-    heroes.push(`<div class="cs-hero-row">
-        <span class="chr-icon"><img src="${ASSETS}icon/sign/${CS_GLYPHS.du}.png" alt=""></span>
-        <div class="chr-main">
-          <div class="chr-sub">Divergent Universe</div>
-          <div class="chr-name">${du.normal_record_brief?.title || "Overview"}</div>
-        </div>
-        <span class="chr-badge">Missions ${du.season_task_finished}/${du.season_task_total}</span>
-      </div>`);
+    // falls back to the generic glyph only if a season is active but this
+    // record brief has no icon yet
+    const icon = du.normal_record_brief?.icon || `${ASSETS}icon/sign/${CS_GLYPHS.du}.png`;
+    heroes.push(csHeroCard(
+      "du", icon, "Divergent Universe", "Current Rank",
+      `${ASSETS}icon/sign/${CS_GLYPHS.du}.png`, du.normal_record_brief?.title || "—"
+    ));
   }
   $("cs-heroes").innerHTML = heroes.join("");
 
@@ -1623,6 +1705,13 @@ function buildCSOverview() {
 }
 
 const MODE_GLYPHS = { moc: "AbyssIcon01", pf: "ChallengeStory", as: "ChallengeBoss" };
+const MODE_NAMES = { moc: "Memory of Chaos", pf: "Pure Fiction", as: "Apocalyptic Shadow" };
+// a queried mode (see loadTreasures) can still have zero actual clears —
+// this tells "never played" apart from "played, just nothing to show yet"
+function hasAttempt(k) {
+  if (k === "aa") return !!tlData.aa["1"]?.challenge_peak_records?.some((r) => r.has_challenge_record);
+  return !!(tlData[k]["1"]?.has_data || tlData[k]["2"]?.has_data);
+}
 const ROMAN = { I: 1, V: 5, X: 10 };
 /* "Academy Ghost Story (XII)" -> 12, "…: Difficulty 4" -> 4 */
 function floorNumber(name) {
@@ -1645,27 +1734,32 @@ function floorNumber(name) {
 function buildTLOverview() {
   const aa = tlData.aa["1"];
   if (aa) {
-    const rec = aa.challenge_peak_records.find((r) => r.has_challenge_record) || {};
+    // the current-cycle record exists whether or not it's been attempted —
+    // fall back to it (not {}) so the theme name/icon still show up on an
+    // unattempted "No Data" card instead of the generic label
+    const rec = aa.challenge_peak_records?.find((r) => r.has_challenge_record) || aa.challenge_peak_records?.[0] || {};
+    const attempted = hasAttempt("aa");
     const g = rec.group || {};
     const brief = aa.challenge_peak_best_record_brief || {};
-    const rank = (brief.challenge_peak_rank_icon_type || "").replace("ChallengePeakRankIconType", "");
     // boss fight is worth 3 stars; pips mirror the in-game hero row
     const pips = [0, 1, 2]
       .map((i) => `<span class="pip${i < (Number(rec.boss_stars) || 0) ? " lit" : ""}">✦</span>`)
       .join("");
-    $("tl-hero").innerHTML = `<button class="tl-hero-card" data-kind="aa" role="tab" aria-pressed="false">
+    $("tl-hero").innerHTML = `<button class="tl-hero-card${attempted ? "" : " no-data"}" data-kind="aa" role="tab" aria-pressed="false">
         <div class="th-main">
-          ${g.theme_pic_path ? `<img class="th-icon" src="${g.theme_pic_path}" alt="">` : ""}
           <div>
             <div class="th-name">${g.name_mi18n || "Anomaly Arbitration"}</div>
-            <div class="th-pips">${pips}</div>
+            ${attempted ? `<div class="th-pips">${pips}</div>` : `<div class="th-nodata">No Data</div>`}
           </div>
-          <div class="th-num">
-            ${rank ? `<span class="th-rank"><img src="${brief.challenge_peak_rank_icon}" alt="">${rank}</span>` : ""}
+          ${attempted ? `<div class="th-num">
             <b>${rec.mob_stars ?? 0}</b><span>Stars</span>
-          </div>
+          </div>` : ""}
         </div>
         <div class="th-go">Go View ▸</div>
+        ${(() => {
+          const rankIcon = brief.challenge_peak_rank_icon || g.theme_pic_path;
+          return rankIcon ? `<div class="th-icon-clip"><span class="th-icon"><img src="${rankIcon}" alt=""></span></div>` : "";
+        })()}
       </button>`;
   } else {
     $("tl-hero").innerHTML = "";
@@ -1674,19 +1768,25 @@ function buildTLOverview() {
   $("tl-tiles").innerHTML = ["moc", "pf", "as"]
     .filter((k) => tlData[k]["1"] || tlData[k]["2"])
     .map((k) => {
+      if (!hasAttempt(k)) {
+        return `<button class="tl-tile no-data" data-kind="${k}" role="tab" aria-pressed="false">
+            <span class="tt-name">${MODE_NAMES[k]}</span>
+            <span class="tt-medal ${k}"><img src="${ASSETS}icon/sign/${MODE_GLYPHS[k]}.png" alt=""></span>
+            <span class="tt-bar tt-nodata">No Data</span>
+          </button>`;
+      }
       const d = tlData[k]["1"] || tlData[k]["2"];
       const top =
         d.all_floor_detail.find((f) => f.maze_id === d.max_floor_id) ||
         d.all_floor_detail[0] || {};
       const floor = splitStarward(top.name || d.max_floor || "", top.is_tierce);
       return `<button class="tl-tile" data-kind="${k}" role="tab" aria-pressed="false">
-          <span class="tt-zoom">⌕</span>
           <span class="tt-name">${(d.groups || [])[0]?.name_mi18n || ""}</span>
           <span class="tt-medal ${k}"><img src="${ASSETS}icon/sign/${MODE_GLYPHS[k]}.png" alt=""></span>
           <span class="tt-bar">
             <img src="${ASSETS}icon/sign/${MODE_GLYPHS[k]}.png" alt="">
             ${floorNumber(floor.name)}
-            <span class="stars">${"★".repeat(Number(top.star_num) || 0)}</span>
+            <span class="stars">${"★".repeat((Number(top.star_num) || 0) - (Number(top.extra_star_num) || 0))}</span>
             ${floor.sw ? '<span class="sw">✦</span>' : ""}
           </span>
         </button>`;
@@ -1694,14 +1794,40 @@ function buildTLOverview() {
     .join("");
 }
 
+/* A queried-but-unattempted mode/cycle: keep the cycle tabs live (a mode
+   can be attempted on one cycle and not the other) but leave the rest of
+   the panel empty with an explanatory notice instead of rendering
+   floor/boss data that was never returned. */
+function renderTLEmpty(kind) {
+  $("tl-cycles").innerHTML = ["1", "2"]
+    .map((c) => {
+      const g = (tlData[kind][c]?.groups || [])[Number(c) - 1];
+      const label = g?.name_mi18n || (c === "1" ? "Current" : "Previous");
+      return `<button data-cycle="${c}" aria-pressed="${c === tlCycle}"${tlData[kind][c] ? "" : " disabled"}>${label}</button>`;
+    })
+    .join("");
+  $("tl-sum").innerHTML = "";
+  $("tl-bosses").innerHTML = "";
+  $("tl-rows").innerHTML = `<div class="notice show">No data recorded for ${MODE_NAMES[kind]} yet.</div>`;
+}
+
 function renderTL(kind) {
-  if (!tlData[kind][tlCycle]) tlCycle = tlData[kind]["1"] ? "1" : "2";
-  const data = tlData[kind][tlCycle];
+  const freshKind = kind !== tlKind;
   tlKind = kind;
   document.querySelectorAll("#endgame [data-kind]").forEach((b) =>
     b.setAttribute("aria-pressed", String(b.dataset.kind === kind))
   );
-  if (kind === "aa") return renderAA(data);
+  // hidden until a mode is actually picked — see loadTreasures
+  $("tl-stats").classList.add("show");
+  if (kind === "aa") return renderAA(tlData.aa["1"]);
+  // prefer a cycle that's actually been played; only reconsider the cycle
+  // when the kind itself just changed, so manually picking a "No Data"
+  // cycle (e.g. to confirm it really has nothing) isn't immediately undone
+  if (freshKind || !tlData[kind][tlCycle]) {
+    tlCycle = tlData[kind]["1"]?.has_data ? "1" : tlData[kind]["2"]?.has_data ? "2" : tlData[kind]["1"] ? "1" : "2";
+  }
+  const data = tlData[kind][tlCycle];
+  if (!data?.has_data) return renderTLEmpty(kind);
   // groups[] lists schedules newest-first, so the requested cycle is at index
   // cycle-1; its begin/end are the cycle dates (top-level ones can be stale)
   const groups = data.groups || [];
@@ -1714,11 +1840,11 @@ function renderTL(kind) {
     .join("");
   const grp = groups[Number(tlCycle) - 1] || {};
   const b = grp.begin_time || data.begin_time, e = grp.end_time || data.end_time;
-  const deepest = splitStarward(data.max_floor, false);
   $("tl-sum").innerHTML =
-    `<span>Stars <b>★ ${data.star_num}${Number(data.extra_star_num) ? " +" + data.extra_star_num : ""}</b></span>` +
-    `<span>Deepest <b>${deepest.name}${deepest.sw ? " ✦" : ""}</b></span>` +
-    `<span>Battles <b>${data.battle_num}</b></span>` +
+    // star_num already includes the Starward bonus star(s) — split it back
+    // out so the ✦ isn't counted twice
+    `<span>Stars <b>★ ${Number(data.star_num) - (Number(data.extra_star_num) || 0)}${Number(data.extra_star_num) ? " " + "✦".repeat(Number(data.extra_star_num)) : ""}</b></span>` +
+    `<span>Attempts <b>${data.battle_num}</b></span>` +
     (b && e ? `<span>Cycle <b>${b.month}/${b.day} – ${e.month}/${e.day}</b></span>` : "");
 
   const strip = [];
@@ -1772,7 +1898,7 @@ function renderTL(kind) {
         .join("");
       return `<div class="act-row moc-row tl-top">
         <span class="floor">${floor.name}${floor.sw ? '<span class="sw-chip">✦ Starward</span>' : ""}</span>
-        <span class="stars-sm">${"★".repeat(Number(f.star_num) || 0)}${Number(f.extra_star_num) ? "+" + f.extra_star_num : ""}</span>
+        <span class="stars-sm">${"★".repeat((Number(f.star_num) || 0) - (Number(f.extra_star_num) || 0))}${"✦".repeat(Number(f.extra_star_num) || 0)}</span>
         <span class="when">${clear}</span>
       </div>
       <div class="team-cards">${cards}</div>`;
@@ -1784,7 +1910,12 @@ function renderTL(kind) {
    with three "Knight" mob stages plus a boss, and a mob/boss star split
    instead of per-floor stars. */
 function renderAA(data) {
-  const rec = (data.challenge_peak_records || []).find((r) => r.has_challenge_record) || {};
+  // the record (theme, monsters, boss) exists whether or not it's been
+  // attempted — fall back to the entry itself, not {}, so an unattempted
+  // theme still shows what it is instead of a blank "Current" placeholder
+  const records = data.challenge_peak_records || [];
+  const rec = records.find((r) => r.has_challenge_record) || records[0] || {};
+  const attempted = !!rec.has_challenge_record;
   const g = rec.group || {};
   const brief = data.challenge_peak_best_record_brief || {};
   $("tl-cycles").innerHTML =
@@ -1795,7 +1926,7 @@ function renderAA(data) {
   $("tl-sum").innerHTML =
     `<span>Stages <b>★ ${rec.mob_stars ?? 0}</b></span>` +
     `<span>Boss <b>★ ${rec.boss_stars ?? 0}</b></span>` +
-    `<span>Battles <b>${rec.battle_num ?? 0}</b></span>` +
+    `<span>Attempts <b>${rec.battle_num ?? 0}</b></span>` +
     (b && e ? `<span>Cycle <b>${b.month}/${b.day} – ${e.month}/${e.day}</b></span>` : "") +
     (rank ? `<span>Rank <b class="rank"><img class="aa-rank" src="${brief.challenge_peak_rank_icon}" alt="">${rank}</b></span>` : "");
 
@@ -1816,12 +1947,17 @@ function renderAA(data) {
   const roster = (avs) => (avs || [])
     .map((a) => `<span class="tc-av"><img src="${a.icon}" alt=""><span>Lv ${a.level}</span></span>`)
     .join("");
+  // 3 stars always render — earned ones lit, the rest dimmed — rather than
+  // just fewer characters, so a 2/3 clear still shows what's missing
+  const starPips = (n) =>
+    Array.from({ length: 3 }, (_, i) => `<span class="${i < n ? "" : "dim"}">★</span>`).join("");
   const stageCards = mobs
     .map((m) => ({ m, r: (rec.mob_records || []).find((x) => x.maze_id === m.maze_id) }))
     .filter(({ r }) => r?.has_challenge_record && r.avatars?.length)
     .map(({ m, r }) => `<div class="team-card">
       <div class="tc-head">
         <span class="tc-label">${m.name}</span>
+        <span class="stars-sm">${starPips(Number(r.star_num) || 0)}</span>
         ${r.challenge_time ? `<span class="tc-meta">${r.challenge_time.month}/${r.challenge_time.day}</span>` : ""}
       </div>
       <div class="tc-roster">${roster(r.avatars)}</div>
@@ -1831,12 +1967,15 @@ function renderAA(data) {
     stageCards.push(`<div class="team-card tierce">
       <div class="tc-head">
         <span class="tc-label">✦ Boss</span>
+        <span class="stars-sm">${starPips(Number(br.star_num) || 0)}</span>
         ${br.challenge_time ? `<span class="tc-meta">${br.challenge_time.month}/${br.challenge_time.day}</span>` : ""}
       </div>
       <div class="tc-roster">${roster(br.avatars)}</div>
     </div>`);
   }
-  $("tl-rows").innerHTML = `<div class="team-cards">${stageCards.join("")}</div>`;
+  $("tl-rows").innerHTML = attempted
+    ? `<div class="team-cards">${stageCards.join("")}</div>`
+    : `<div class="notice show">No data recorded for Anomaly Arbitration yet.</div>`;
 }
 
 $("tl-hero").onclick = $("tl-tiles").onclick = (ev) => {
@@ -1927,6 +2066,14 @@ function themeForClear(kind, daysAgo) {
   return best?.name || (inWindow.length === 1 ? inWindow[0] : undefined);
 }
 
+/* mihomo's activity feed still names Divergent Universe season icons
+   "RogueTourmS<n>" (missing the "n"). StarRailRes kept that typo only for
+   the original season 1 asset and corrected the spelling from season 2
+   on, so any later season 404s unless corrected here. */
+function fixActivityIcon(icon) {
+  return icon.replace(/^icon\/sign\/RogueTourmS([2-9]\d*)\.png$/, "icon/sign/RogueTournS$1.png");
+}
+
 function renderActivity() {
   if (!activityInfo) return;
   $("activity-rows").innerHTML = activityInfo
@@ -1940,7 +2087,7 @@ function renderActivity() {
         what = theme ? `${what.trim()} ${theme}` : what.replace(/:\s*$/, "");
       }
       return `<div class="act-row">
-        <img src="${ASSETS + a.content.icon}" alt="">
+        <img src="${ASSETS + fixActivityIcon(a.content.icon)}" alt="">
         <span>${what}</span>
         <span class="when">${when}</span>
       </div>`;
@@ -1948,6 +2095,12 @@ function renderActivity() {
     .join("");
   $("activity").classList.add("show");
 }
+
+// showcase slot counts are fixed in-game (3 support, 5 display) — padding
+// out to these with blank cards keeps the grid a consistent size instead
+// of reflowing/enlarging when a profile hasn't filled every slot
+const MAX_SUPPORT = 3;
+const MAX_DISPLAY = 5;
 
 function renderRoster(chars) {
   const support = [], display = [];
@@ -1959,11 +2112,12 @@ function renderRoster(chars) {
       <span class="cc-name">${c.name}</span>
       <span class="cc-lv">Lv. ${c.level}</span>
     </button>`;
+  const blankCard = `<div class="char-card blank" aria-hidden="true"><span class="cc-art"></span></div>`;
+  const padded = (list, max) => list.map(card).join("") + blankCard.repeat(Math.max(0, max - list.length));
   $("sec-support").style.display = support.length ? "" : "none";
-  $("cards-support").innerHTML = support.map(card).join("");
-  $("sec-display").style.display = display.length ? "" : "none";
-  $("cards-display").innerHTML = display.map(card).join("");
-  document.querySelectorAll(".char-card").forEach((b) => {
+  $("cards-support").innerHTML = padded(support, MAX_SUPPORT);
+  $("cards-display").innerHTML = padded(display, MAX_DISPLAY);
+  document.querySelectorAll(".char-card[data-i]").forEach((b) => {
     b.onclick = () => selectChar(Number(b.dataset.i));
   });
 }
@@ -1992,15 +2146,7 @@ function selectChar(i) {
   stars.classList.toggle("r4", c.rarity < 5);
   $("c-lv").textContent = `Lv ${c.level} / ${20 + c.promotion * 10}`;
 
-  const lc = c.light_cone;
-  $("c-lc-art").innerHTML = lc
-    ? `<img class="lc-icon" src="${ASSETS + (lc.preview || lc.icon)}" alt="" loading="lazy">
-      <div>
-        <div class="lc-name">${lc.name}</div>
-        <span class="stars${lc.rarity < 5 ? " r4" : ""}">${"★".repeat(lc.rarity)}</span>
-        <div class="lc-meta">Lv ${lc.level} · Superimposition ${lc.rank}</div>
-      </div>`
-    : `<div class="none">No light cone equipped</div>`;
+  renderLightCone(c.light_cone);
 
   $("c-stats").innerHTML = mergeStats(c)
     .map((s) => `<div class="stat"><span class="k">${s.icon ? `<img src="${ASSETS + s.icon}" alt="">` : ""}<span>${s.name}</span></span><span class="v">${s.display}</span></div>`)
@@ -2024,23 +2170,20 @@ function selectChar(i) {
           // roll lands low/mid/high = +0/+1/+2), so step/(2·count) grades
           // how high the rolls landed overall
           const q = a.count ? a.step / (2 * a.count) : 0;
-          const cls = q >= 0.67 ? " hi" : q >= 0.34 ? " mid" : "";
           const tip = `${a.count} roll${a.count > 1 ? "s" : ""} · ${Math.round(q * 100)}% of max`;
           // upgrade rolls beyond the initial one (a relic gets 5 across its subs)
           const extra = a.count - 1;
-          return `<span>${a.name}</span><i class="rolls${cls}" title="${tip}">${">".repeat(extra)}</i><b>+${a.display}</b>`;
+          return `<span>${a.name}</span><i class="rolls" title="${tip}">${">".repeat(extra)}</i><b>+${a.display}</b>`;
         })
         .join("");
       return `<div class="relic" title="${r.name} · ${r.set_name}">
         <div class="top">
+          <img src="${ASSETS + r.icon}" alt="">
           <span class="mk">${r.main_affix.name}</span>
           <span class="mv">${r.main_affix.display}</span>
           <span class="lv r${r.rarity}">+${r.level}</span>
         </div>
-        <div class="body">
-          <img src="${ASSETS + r.icon}" alt="">
-          <div class="subs">${subs}</div>
-        </div>
+        <div class="subs">${subs}</div>
       </div>`;
     })
     .join("");
@@ -2065,14 +2208,52 @@ function renderEidolons(c) {
     .map((icon, i) => {
       const locked = i >= c.rank;
       const info = ranksIndex?.[String(c.id) + String(i + 1).padStart(2, "0")];
-      const title = info
-        ? `E${i + 1} · ${info.name}${locked ? " (locked)" : ""}\n\n${info.desc}`
-        : `Eidolon ${i + 1}${locked ? " (locked)" : ""}`;
-      return `<div class="eido${locked ? " locked" : ""}" title="${title.replace(/"/g, "&quot;")}">
+      const name = `E${i + 1}${info ? " · " + info.name : ""}${locked ? " (locked)" : ""}`;
+      const desc = info ? resolveTemplate(info.desc, info.params?.[0]) : "";
+      // custom hover tooltip (see #trace-tip / the mouseover delegate) —
+      // same shared element traces use, keyed off the same data attrs
+      return `<div class="eido${locked ? " locked" : ""}"
+          data-tip-name="${escAttr(name)}" data-tip-desc="${escAttr(desc)}">
         <img src="${ASSETS + icon}" alt="Eidolon ${i + 1}">
       </div>`;
     })
     .join("");
+}
+
+/* Light cone passive (name + Superimposition-scaled desc) isn't in the
+   Mihomo payload either — StarRailRes indexes it by light cone id, with
+   one params row per superimposition rank (1-5). Fetched once at boot;
+   the tooltip lands once this resolves. */
+let lcRanksIndex = null;
+fetch(ASSETS + "index_min/en/light_cone_ranks.json")
+  .then((r) => (r.ok ? r.json() : null))
+  .then((j) => {
+    lcRanksIndex = j;
+    if (data) renderLightCone(data.characters[currentChar].light_cone);
+  })
+  .catch(() => {});
+
+function renderLightCone(lc) {
+  if (!lc) {
+    $("c-lc-art").innerHTML = `<div class="none">No light cone equipped</div>`;
+    return;
+  }
+  const info = lcRanksIndex?.[String(lc.id)];
+  const name = `${lc.name} · S${lc.rank}`;
+  // the passive's own name sits as a heading above its description,
+  // rather than crowding the tooltip's name line
+  const desc = info
+    ? `<b class="tt-ability">${escHtml(info.skill)}</b>\n${resolveTemplate(info.desc, info.params?.[lc.rank - 1])}`
+    : "";
+  // same shared hover tooltip as traces/eidolons (see #trace-tip)
+  $("c-lc-art").innerHTML =
+    `<img class="lc-icon" src="${ASSETS + (lc.preview || lc.icon)}" alt="" loading="lazy"
+        data-tip-name="${escAttr(name)}" data-tip-desc="${escAttr(desc)}">
+      <div>
+        <div class="lc-name">${lc.name}</div>
+        <span class="stars${lc.rarity < 5 ? " r4" : ""}">${"★".repeat(lc.rarity)}</span>
+        <div class="lc-meta">Lv ${lc.level} · S${lc.rank}</div>
+      </div>`;
 }
 
 /* Final stats = base attributes + additions, merged by field. */
@@ -2147,13 +2328,13 @@ function scheduleHideTraceTip() {
 }
 
 document.addEventListener("mouseover", (e) => {
-  const tn = e.target.closest(".tn[data-tip-name]");
+  const tn = e.target.closest("[data-tip-name]");
   if (tn) { showTraceTip(tn); return; }
   if (traceTip.contains(e.target)) clearTimeout(hideTipTimer);
 });
 document.addEventListener("mouseout", (e) => {
   if (!traceTipTarget) return;
-  if (e.target.closest(".tn[data-tip-name]") === traceTipTarget || traceTip.contains(e.target)) {
+  if (e.target.closest("[data-tip-name]") === traceTipTarget || traceTip.contains(e.target)) {
     scheduleHideTraceTip();
   }
 });
@@ -2196,7 +2377,7 @@ traceTip.addEventListener("wheel", wheelScrollTraceTip, { passive: false });
 // icon is hovered. Delegated (icons get replaced wholesale on every
 // character switch) and only while that icon still owns the tooltip.
 document.addEventListener("wheel", (e) => {
-  if (traceTipTarget && e.target.closest(".tn[data-tip-name]") === traceTipTarget) wheelScrollTraceTip(e);
+  if (traceTipTarget && e.target.closest("[data-tip-name]") === traceTipTarget) wheelScrollTraceTip(e);
 }, { passive: false });
 
 /* ---------------- boot ---------------- */

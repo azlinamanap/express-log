@@ -173,5 +173,5 @@ class Handler(SimpleHTTPRequestHandler):
 
 if __name__ == "__main__":
     handler = partial(Handler, directory=str(Path(__file__).parent))
-    print(f"Starlog dev server → http://127.0.0.1:{PORT}")
+    print(f"The Express Log dev server → http://127.0.0.1:{PORT}")
     HTTPServer(("127.0.0.1", PORT), handler).serve_forever()
