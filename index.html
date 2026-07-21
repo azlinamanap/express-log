@@ -2,7 +2,10 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- desktop-only layout: pin the viewport to the app's fixed width (matches
+     .app max-width) so phones render the full desktop layout scaled-to-fit
+     rather than reflowing to a narrow/stacked one -->
+<meta name="viewport" content="width=1200">
 <title>The Express Log · HSR showcase</title>
 <style>
   /* HSR in-game UI typeface (HYQiHei 65J from StarRailRes RPG_CN.ttf),
@@ -191,6 +194,21 @@
   }
   /* right pane swaps between the roster and battle records; the pcard anchors both */
   .pane { min-width: 0; display: flex; flex-direction: column; gap: 18px; }
+  /* each pane panel fades and slides as it swaps in. The animation restarts on
+     its own every time a panel returns from display:none (tab switch), so the
+     left pcard stays put while only the right side moves. --enter-x, set by
+     applyView, points the slide toward the direction of travel between tabs
+     (positive = new tab is further right, so it enters from the right). */
+  @keyframes paneIn {
+    from { opacity: 0; transform: translateX(var(--enter-x, 0px)); }
+    to   { opacity: 1; transform: none; }
+  }
+  .pane > .roster, .pane > .activity, .pane > .collection {
+    animation: paneIn 0.34s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .pane > .roster, .pane > .activity, .pane > .collection { animation: none; }
+  }
   .pane .activity { margin-top: 0; }
   .pane .notice { margin-top: 0; }
   .pc-art {
@@ -278,7 +296,9 @@
     background: var(--panel);
     border: 1px solid var(--line);
     border-radius: 14px;
-    padding: 16px 18px 18px;
+    /* trimmed vertical padding (was 16/18) so the two card sections fit the
+       fixed --profile-h height without the roster scrolling on desktop */
+    padding: 9px 18px 11px;
     display: flex; flex-direction: column; gap: 18px;
   }
   .roster h4 {
@@ -498,13 +518,14 @@
   }
   .th-num b { font-family: var(--mono); font-size: 35px; font-weight: 600; color: var(--ink); }
   .th-num span { font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+  .th-num-none { align-items: center; font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
   .th-go {
     display: flex; justify-content: flex-end;
     padding: 6px 16px;
     /* this bottom bar is a visually separate section within the card, so
        it rounds its own bottom corners to match the card's own radius */
     border-radius: 0 0 11px 11px;
-    background: linear-gradient(90deg, rgba(232, 221, 196, 0.12), rgba(232, 221, 196, 0.88));
+    background: linear-gradient(90deg, rgba(240, 205, 138, 0.12), var(--gold-hi));
     color: #1b2036;
     font-size: 13.5px; font-weight: 600; letter-spacing: 0.04em;
   }
@@ -827,9 +848,23 @@
   .sheet-cols { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 7fr); column-gap: 26px; align-items: start; align-content: start; margin-top: 18px; flex: 1 1 auto; }
   @media (max-width: 640px) { .sheet-cols { grid-template-columns: 1fr; } }
   .char-head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+  /* name stays left; the auto margin pushes the stars + level to the right edge */
+  .char-head .stars { margin-left: auto; }
   .char-name { font-family: var(--display); font-size: 25px; letter-spacing: 0.05em; }
   .stars { color: var(--r5); font-size: 14px; letter-spacing: 2px; }
   .stars.r4 { color: var(--r4); }
+  /* the Starward extra star (✦) isn't in the RPGCN mono font, so it falls back
+     to a system glyph that renders smaller than the RPGCN ★ beside it — scale
+     it up (line-height:0 so it doesn't grow the row) to match the regular stars */
+  .xstar {
+    /* keep a 1em layout box so it aligns with the ★ row, then scale the glyph
+       up visually; transform needs inline-block. gradient via clipped fill. */
+    font-size: 1em; line-height: 1; display: inline-block;
+    transform: translateY(-0.12em) scale(2); vertical-align: baseline; margin: 0 0.2em 0 0.5em;
+    background: linear-gradient(135deg, #eaf6ff 0%, #8fd0f5 33%, #9b6fe0 66%, #ff7fc4 100%);
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent; color: transparent;
+  }
   .char-lv { font-family: var(--mono); font-size: 14px; color: var(--ink-2); }
 
 
@@ -1528,10 +1563,20 @@ async function load(uid) {
 /* Top-level split mirroring the in-game profile: "battle" holds Treasures
    Lightward, "chars" holds the profile card, roster, and character detail. */
 let view = "chars";
+let prevView = null;
+// tab order left→right, so the sign of the index delta tells the pane which
+// way to slide in: rightward move → enter from the right, and vice versa
+const VIEW_ORDER = ["battle", "chars", "coll"];
 function applyView() {
   document.querySelectorAll("#view-tabs button").forEach((b) =>
     b.setAttribute("aria-pressed", String(b.dataset.view === view))
   );
+  const dir = prevView && prevView !== view
+    ? VIEW_ORDER.indexOf(view) - VIEW_ORDER.indexOf(prevView)
+    : 0;
+  document.querySelector(".pane").style
+    .setProperty("--enter-x", (dir > 0 ? 28 : dir < 0 ? -28 : 0) + "px");
+  prevView = view;
   $("roster").classList.toggle("view-hidden", view !== "chars");
   $("detail").classList.toggle("view-hidden", view !== "chars");
   $("endgame").classList.toggle("view-hidden", view !== "battle");
@@ -1542,8 +1587,22 @@ function applyView() {
     view === "battle" && !$("endgame").classList.contains("show")
   );
 }
+/* Switching top tabs resets the drilled-in selection in both showcases, so a
+   tab always reopens on its list (roster / mode tiles) with nothing selected
+   rather than the card left open from a previous visit. */
+function clearSelections() {
+  // Character Showcase: close the detail sheet, deselect every roster card
+  $("detail").classList.remove("show");
+  document.querySelectorAll(".char-card[aria-pressed='true']")
+    .forEach((b) => b.setAttribute("aria-pressed", "false"));
+  // Battle Records: hide the stats card, deselect the mode tiles/hero
+  $("tl-stats").classList.remove("show");
+  tlKind = null;
+  document.querySelectorAll(".tl-tile[aria-pressed='true'], .tl-hero-card[aria-pressed='true']")
+    .forEach((b) => b.setAttribute("aria-pressed", "false"));
+}
 document.querySelectorAll("#view-tabs button").forEach((b) => {
-  b.onclick = () => { view = b.dataset.view; applyView(); };
+  b.onclick = () => { view = b.dataset.view; clearSelections(); applyView(); };
 });
 
 function notice(html) {
@@ -1787,9 +1846,9 @@ function buildTLOverview() {
             <div class="th-name">${g.name_mi18n || "Anomaly Arbitration"}</div>
             ${attempted ? `<div class="th-pips">${pips}</div>` : `<div class="th-nodata">No Data</div>`}
           </div>
-          ${attempted ? `<div class="th-num">
-            <b>${rec.mob_stars ?? 0}</b><span>Stars</span>
-          </div>` : ""}
+          ${attempted ? (rec.boss_record?.has_challenge_record
+            ? `<div class="th-num"><b>${rec.boss_record.round_num ?? 0}</b><span>Cycles</span></div>`
+            : `<div class="th-num th-num-none">Not Attempted</div>`) : ""}
         </div>
         <div class="th-go">Go View ▸</div>
         ${(() => {
@@ -1823,7 +1882,7 @@ function buildTLOverview() {
             <img src="${ASSETS}icon/sign/${MODE_GLYPHS[k]}.png" alt="">
             ${floorNumber(floor.name)}
             <span class="stars">${"★".repeat((Number(top.star_num) || 0) - (Number(top.extra_star_num) || 0))}</span>
-            ${floor.sw ? '<span class="sw">✦</span>' : ""}
+            ${floor.sw ? '<span class="sw xstar">✦</span>' : ""}
           </span>
         </button>`;
     })
@@ -1879,7 +1938,7 @@ function renderTL(kind) {
   $("tl-sum").innerHTML =
     // star_num already includes the Starward bonus star(s) — split it back
     // out so the ✦ isn't counted twice
-    `<span>Stars <b>★ ${Number(data.star_num) - (Number(data.extra_star_num) || 0)}${Number(data.extra_star_num) ? " " + "✦".repeat(Number(data.extra_star_num)) : ""}</b></span>` +
+    `<span>Stars <b>★ ${Number(data.star_num) - (Number(data.extra_star_num) || 0)}${Number(data.extra_star_num) ? " " + '<span class="xstar">✦</span>'.repeat(Number(data.extra_star_num)) : ""}</b></span>` +
     `<span>Attempts <b>${data.battle_num}</b></span>` +
     (b && e ? `<span>Cycle <b>${b.month}/${b.day} – ${e.month}/${e.day}</b></span>` : "");
 
@@ -1934,7 +1993,7 @@ function renderTL(kind) {
         .join("");
       return `<div class="act-row moc-row tl-top">
         <span class="floor">${floor.name}${floor.sw ? '<span class="sw-chip">✦ Starward</span>' : ""}</span>
-        <span class="stars-sm">${"★".repeat((Number(f.star_num) || 0) - (Number(f.extra_star_num) || 0))}${"✦".repeat(Number(f.extra_star_num) || 0)}</span>
+        <span class="stars-sm">${"★".repeat((Number(f.star_num) || 0) - (Number(f.extra_star_num) || 0))}${'<span class="xstar">✦</span>'.repeat(Number(f.extra_star_num) || 0)}</span>
         <span class="when">${clear}</span>
       </div>
       <div class="team-cards">${cards}</div>`;
