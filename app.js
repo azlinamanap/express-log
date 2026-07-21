@@ -343,8 +343,6 @@ async function load(uid) {
     if (!data.characters?.length) {
       throw new Error("This profile has no characters on display — enable showcase in-game (Profile → Support/Display).");
     }
-    history.replaceState(null, "", "#" + uid);
-    localStorage.setItem("starlog.uid", uid);
     bumpLoad(65);
     // raw profile (assist/display slot split, on failure everything lands in
     // one group), activity, and treasures all load together rather than the
@@ -1456,17 +1454,46 @@ document.addEventListener("wheel", (e) => {
 
 /* ---------------- boot ---------------- */
 
+/* The URL hash is the source of truth for which view shows: a bare URL is the
+   intro screen, a UID hash (#800333171) is that profile. renderRoute() paints
+   whatever the current URL says without touching history, so it also drives
+   the Back/Forward buttons and deep links. Navigation actions (submitting the
+   form, clicking the wordmark) pushState first, then render — so each profile
+   and the intro screen become real, shareable history entries. */
+function resetToIntro() {
+  stopLoad();
+  clearShowcase();
+  notice(null);
+  $("uid").value = "";
+}
+
+function renderRoute() {
+  const uid = location.hash.replace("#", "");
+  if (/^\d{9,10}$/.test(uid)) {
+    $("uid").value = uid;
+    load(uid);
+  } else {
+    resetToIntro();
+  }
+}
+
 $("form").addEventListener("submit", (e) => {
   e.preventDefault();
   const uid = $("uid").value.trim();
-  if (uid) load(uid);
+  if (!uid) return;
+  if (location.hash !== "#" + uid) history.pushState(null, "", "#" + uid);
+  load(uid);
 });
 
-// a bare URL opens on the intro screen; a UID hash (#800333171) deep-links
-// straight to that profile so links can be shared and bookmarked
-const fromHash = location.hash.replace("#", "");
-if (/^\d{9,10}$/.test(fromHash)) {
-  $("uid").value = fromHash;
-  load(fromHash);
-}
+// clicking the wordmark returns to the intro screen as its own history entry
+document.querySelector(".wordmark").addEventListener("click", () => {
+  if (location.hash) history.pushState(null, "", location.pathname + location.search);
+  resetToIntro();
+});
+
+// Back/Forward re-render whatever view the URL now points to
+window.addEventListener("popstate", renderRoute);
+
+// paint the initial view from the URL (deep link or bare intro)
+renderRoute();
 

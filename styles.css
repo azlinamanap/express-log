@@ -43,7 +43,7 @@
   img { display: block; }
   :focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
 
-  .app { max-width: 1200px; margin: 0 auto; padding: 0 20px 60px; }
+  .app { max-width: 1200px; margin: 0 auto; padding: 0 20px 60px; min-height: 100vh; display: flex; flex-direction: column; }
 
   /* ---------- header ---------- */
   header {
@@ -58,6 +58,8 @@
     letter-spacing: 0.26em;
     text-transform: uppercase;
     color: var(--gold-hi);
+    cursor: pointer;
+    width: fit-content;
   }
   .wordmark::after {
     content: "✦ trailblazer showcase";
@@ -81,19 +83,13 @@
 
   /* ---------- intro hero (search centered until a profile loads) ---------- */
   .hero {
-    min-height: calc(100vh - 150px);
+    flex: 1;
     display: flex; flex-direction: column;
     align-items: center; justify-content: center;
     text-align: center;
     gap: 15px;
   }
   .app.has-showcase .hero { display: none; }
-  .hero-title {
-    font-family: var(--display);
-    font-size: 34px; font-weight: 550;
-    letter-spacing: 0.16em; text-transform: uppercase;
-    color: var(--gold-hi);
-  }
   .hero-sub { color: var(--ink-2); font-size: 15px; }
   .hero-sub b { color: var(--ink); }
   .hero-note { color: var(--muted); font-size: 12.5px; max-width: 440px; line-height: 1.55; }
@@ -1159,5 +1155,8 @@
   .relic .subs .rolls { font-style: normal; font-family: var(--mono); font-size: 11px; text-align: right; color: var(--gold-hi); cursor: default; }
   .relic .subs b { font-family: var(--mono); font-weight: 500; color: var(--ink-2); }
 
-  footer { margin-top: 30px; font-size: 12px; color: var(--muted); }
+  /* margin-top:auto keeps the footer pinned to the bottom of the .app flex
+     column whether the hero fills the page (intro) or a short showcase leaves
+     slack; padding-top preserves the gap since the auto margin replaces it */
+  footer { margin-top: auto; padding-top: 30px; font-size: 12px; color: var(--muted); }
   footer a { color: var(--ink-2); }
