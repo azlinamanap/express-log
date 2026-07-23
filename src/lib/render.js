@@ -335,9 +335,20 @@ function rosterCard([c, i]) {
     </button>`;
 }
 
-export function renderRoster(chars, assistIds) {
+export function renderRoster(chars, assistIds, displayIds) {
 	const support = [], display = [];
-	chars.forEach((c, i) => (assistIds.has(String(c.id)) ? support : display).push([c, i]));
+	// The parsed character list dedupes a character that occupies both an assist
+	// and a display slot, so we split by explicit membership: a shared character
+	// lands in both rosters. When the raw display list is unavailable (best-effort
+	// fetch failed), fall back to treating every non-assist character as display.
+	const hasDisplayInfo = displayIds && displayIds.size > 0;
+	chars.forEach((c, i) => {
+		const id = String(c.id);
+		const inAssist = assistIds.has(id);
+		const inDisplay = hasDisplayInfo ? displayIds.has(id) : !inAssist;
+		if (inAssist) support.push([c, i]);
+		if (inDisplay || !inAssist) display.push([c, i]);
+	});
 	const blank = `<div class="char-card blank" aria-hidden="true"><span class="cc-art"></span></div>`;
 	const padded = (list, max) => list.map(rosterCard).join('') + blank.repeat(Math.max(0, max - list.length));
 	return {

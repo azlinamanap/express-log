@@ -60,6 +60,7 @@
     color: var(--gold-hi);
     cursor: pointer;
     width: fit-content;
+    text-align: left;
   }
   .wordmark::after {
     content: "✦ trailblazer showcase";
@@ -206,6 +207,7 @@
   /* ---------- top-level view tabs (battle records / character showcase) ---------- */
   .view-tabs {
     display: none;
+    position: relative;
     width: max-content;
     margin: 24px auto 0;
     padding: 4px;
@@ -214,7 +216,22 @@
     border-radius: 999px;
   }
   .view-tabs.show { display: flex; }
+  /* gold pill that slides behind whichever tab is active */
+  .view-pill {
+    position: absolute;
+    top: 0;
+    left: 0;
+    border-radius: 999px;
+    background: var(--gold-hi);
+    pointer-events: none;
+  }
+  .view-pill.ready {
+    transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+                width 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+  }
   .view-tabs button {
+    position: relative;
+    z-index: 1;
     border: 0;
     border-radius: 999px;
     padding: 7px 22px;
@@ -222,9 +239,9 @@
     letter-spacing: 0.04em;
     color: var(--ink-2);
     background: transparent;
+    transition: color 0.35s ease;
   }
   .view-tabs button[aria-pressed="true"] {
-    background: var(--gold-hi);
     color: #1b2036;
     font-weight: 600;
   }
@@ -610,6 +627,8 @@
     border-left: 1px solid var(--line-dim);
   }
   .th-num b { font-family: var(--mono); font-size: 35px; font-weight: 600; color: var(--ink); }
+  .th-num.th-stars { font-family: var(--mono); font-size: 26px; color: var(--ink); }
+  .th-num .th-star { font: inherit; text-transform: none; letter-spacing: 0; color: var(--gold-hi); text-shadow: 0 0 8px rgba(217, 176, 108, 0.6); }
   .th-num span { font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
   .th-num-none { align-items: center; font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
   .th-go {

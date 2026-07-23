@@ -27,17 +27,21 @@ export async function fetchProfile(uid) {
 }
 
 /* The raw endpoint carries what the parsed one lacks: the assist/display slot
-   split, head frame, personal card, and birthday. Best-effort. */
+   split, head frame, personal card, and birthday. Best-effort. The parsed
+   character list dedupes a character shared by both slots, so we keep the two
+   id sets separate to place shared characters in both rosters. */
 export async function fetchRaw(uid) {
 	const assistIds = new Set();
+	const displayIds = new Set();
 	try {
 		const res = await fetch(`/api/raw/${uid}`);
-		if (!res.ok) return { di: null, assistIds };
+		if (!res.ok) return { di: null, assistIds, displayIds };
 		const raw = JSON.parse(clean(await res.text()));
 		(raw.detailInfo?.assistAvatarList || []).forEach((a) => assistIds.add(String(a.avatarId)));
-		return { di: raw.detailInfo || null, assistIds };
+		(raw.detailInfo?.avatarDetailList || []).forEach((a) => displayIds.add(String(a.avatarId)));
+		return { di: raw.detailInfo || null, assistIds, displayIds };
 	} catch {
-		return { di: null, assistIds };
+		return { di: null, assistIds, displayIds };
 	}
 }
 

@@ -1,11 +1,11 @@
 <script>
 	import { renderRoster } from '$lib/render.js';
 
-	let { characters, assistIds, selected = null, hidden = false, onselect } = $props();
+	let { characters, assistIds, displayIds, selected = null, hidden = false, onselect } = $props();
 
 	let supportEl = $state(null);
 	let displayEl = $state(null);
-	let r = $derived(renderRoster(characters, assistIds));
+	let r = $derived(renderRoster(characters, assistIds, displayIds));
 
 	function click(e) {
 		const b = e.target.closest('[data-i]');

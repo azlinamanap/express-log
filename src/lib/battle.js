@@ -91,7 +91,9 @@ export function renderTLOverview(tlData) {
           </div>
           ${attempted ? (rec.boss_record?.has_challenge_record
 			? `<div class="th-num"><b>${rec.boss_record.round_num ?? 0}</b><span>Cycles</span></div>`
-			: `<div class="th-num th-num-none">Not Attempted</div>`) : ''}
+			: (rec.mob_records?.some((r) => r.has_challenge_record)
+				? `<div class="th-num th-stars"><span class="th-star">★</span> ${rec.mob_stars ?? 0}/9</div>`
+				: `<div class="th-num th-num-none">No Data</div>`)) : ''}
         </div>
         <div class="th-go">Go View ▸</div>
         ${(() => {

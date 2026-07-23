@@ -19,6 +19,7 @@
 	let profile = $state(null);
 	let cosmetics = $state(null);
 	let assistIds = $state(new Set());
+	let displayIds = $state(new Set());
 	let activityInfo = $state(null);
 	let tlData = $state({ aa: {}, moc: {}, pf: {}, as: {} });
 	let csData = $state({});
@@ -30,6 +31,23 @@
 	let tlKind = $state(null);
 	let tlCycle = $state('1');
 	let enterX = $state('0px');
+
+	// sliding gold pill behind the active view tab
+	let tabNav = $state(null);
+	let pillStyle = $state('');
+	let pillReady = $state(false);
+
+	// re-measure the active tab whenever the selection changes (view) so the
+	// pill overlays it exactly regardless of each label's width; the first
+	// placement is snapped (no transition) via pillReady flipping next frame
+	$effect(() => {
+		view;
+		if (!tabNav) return;
+		const active = tabNav.querySelector('button[aria-pressed="true"]');
+		if (!active) return;
+		pillStyle = `width:${active.offsetWidth}px;height:${active.offsetHeight}px;transform:translate(${active.offsetLeft}px,${active.offsetTop}px)`;
+		if (!pillReady) requestAnimationFrame(() => (pillReady = true));
+	});
 
 	const VIEW_ORDER = ['battle', 'chars', 'coll'];
 
@@ -65,6 +83,7 @@
 		profile = null;
 		cosmetics = null;
 		assistIds = new Set();
+		displayIds = new Set();
 		activityInfo = null;
 		tlData = { aa: {}, moc: {}, pf: {}, as: {} };
 		csData = {};
@@ -91,6 +110,7 @@
 			profile = p;
 			cosmetics = raw.di;
 			assistIds = raw.assistIds;
+		displayIds = raw.displayIds;
 			activityInfo = act;
 			tlData = battle.tlData;
 			csData = battle.csData;
@@ -120,7 +140,8 @@
 </script>
 
 {#if profile}
-	<nav class="view-tabs show" role="tablist" aria-label="Showcase section">
+	<nav class="view-tabs show" role="tablist" aria-label="Showcase section" bind:this={tabNav}>
+		<span class="view-pill" class:ready={pillReady} style={pillStyle} aria-hidden="true"></span>
 		<button aria-pressed={view === 'battle'} onclick={() => setView('battle')}>
 			Battle Records Showcase
 		</button>
@@ -138,6 +159,7 @@
 			<Roster
 				characters={profile.characters}
 				{assistIds}
+				{displayIds}
 				selected={currentChar}
 				hidden={view !== 'chars'}
 				onselect={(i) => (currentChar = i)}
