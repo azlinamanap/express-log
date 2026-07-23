@@ -367,7 +367,7 @@
   }
   .pc-uid:hover { color: var(--ink); }
   .lv-badge {
-    position: absolute; bottom: -2px; left: 8px;
+    position: absolute; bottom: 6px; right: 0;
     min-width: 28px; height: 28px;
     line-height: 26px; text-align: center;
     background: #10131f;
@@ -492,7 +492,6 @@
   .avatar-wrap { position: relative; width: 96px; height: 96px; flex: none; }
   .avatar-wrap .avatar {
     width: 96px; height: 96px; border-radius: 50%;
-    border: 2px solid var(--gold);
     background: var(--panel-2);
   }
   .avatar-wrap.framed .avatar {
@@ -503,7 +502,9 @@
        and a fixed avatar with a per-frame-scaled ring keeps the avatar the
        same size everywhere while the band always tucks over its edge. The
        34px = 32px target ring + 2px so the avatar slips just under the band. */
-    clip-path: circle(34px at 50% 50%);
+    clip-path: circle(41px at 50% 50%);
+    transform: scale(0.829);
+    transform-origin: 50% 50%;
   }
   .avatar-wrap .frame {
     /* placeFrame() sets width/height/left/top so the measured ring aligns to
