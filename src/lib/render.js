@@ -336,19 +336,30 @@ function rosterCard([c, i]) {
 }
 
 export function renderRoster(chars, assistIds, displayIds) {
-	const support = [], display = [];
 	// The parsed character list dedupes a character that occupies both an assist
 	// and a display slot, so we split by explicit membership: a shared character
-	// lands in both rosters. When the raw display list is unavailable (best-effort
-	// fetch failed), fall back to treating every non-assist character as display.
+	// lands in both rosters. Order each roster by its raw id list (assistAvatarList
+	// / avatarDetailList are Sets that preserve the in-game slot order) rather than
+	// the parsed character order, which floats assist characters to the front and
+	// so scrambles the display roster. When the raw display list is unavailable
+	// (best-effort fetch failed), fall back to treating every non-assist character
+	// as display, in parsed order.
+	const byId = new Map(chars.map((c, i) => [String(c.id), [c, i]]));
 	const hasDisplayInfo = displayIds && displayIds.size > 0;
-	chars.forEach((c, i) => {
-		const id = String(c.id);
-		const inAssist = assistIds.has(id);
-		const inDisplay = hasDisplayInfo ? displayIds.has(id) : !inAssist;
-		if (inAssist) support.push([c, i]);
-		if (inDisplay || !inAssist) display.push([c, i]);
-	});
+	const support = [...assistIds].map((id) => byId.get(id)).filter(Boolean);
+	const display = [];
+	if (hasDisplayInfo) {
+		// displayIds order first, then any character in neither roster (parsed order).
+		for (const id of displayIds) if (byId.has(id)) display.push(byId.get(id));
+		chars.forEach((c, i) => {
+			const id = String(c.id);
+			if (!assistIds.has(id) && !displayIds.has(id)) display.push([c, i]);
+		});
+	} else {
+		chars.forEach((c, i) => {
+			if (!assistIds.has(String(c.id))) display.push([c, i]);
+		});
+	}
 	const blank = `<div class="char-card blank" aria-hidden="true"><span class="cc-art"></span></div>`;
 	const padded = (list, max) => list.map(rosterCard).join('') + blank.repeat(Math.max(0, max - list.length));
 	return {
