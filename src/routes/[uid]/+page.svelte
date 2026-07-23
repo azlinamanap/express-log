@@ -1,10 +1,10 @@
 <script>
+	import { goto } from '$app/navigation';
 	import { showcase } from '$lib/stores.js';
 	import { startLoad, bumpLoad, finishLoad, stopLoad, preloadImages } from '$lib/loader.js';
 	import { fetchProfile, fetchRaw, fetchActivity, fetchBattle } from '$lib/api.js';
 	import { characterImageUrls } from '$lib/render.js';
 	import { renderTLOverview, renderCSOverview } from '$lib/battle.js';
-	import Hero from '$lib/components/Hero.svelte';
 	import ProfileCard from '$lib/components/ProfileCard.svelte';
 	import Roster from '$lib/components/Roster.svelte';
 	import CharacterDetail from '$lib/components/CharacterDetail.svelte';
@@ -22,7 +22,6 @@
 	let activityInfo = $state(null);
 	let tlData = $state({ aa: {}, moc: {}, pf: {}, as: {} });
 	let csData = $state({});
-	let error = $state(null);
 
 	// view state
 	let view = $state('chars');
@@ -69,7 +68,6 @@
 		activityInfo = null;
 		tlData = { aa: {}, moc: {}, pf: {}, as: {} };
 		csData = {};
-		error = null;
 		currentChar = null;
 		tlKind = null;
 		tlCycle = '1';
@@ -106,7 +104,11 @@
 			if (token !== runToken) return;
 			stopLoad();
 			showcase.set(false);
-			error = e.message;
+			// a failed load leaves the profile route with nothing to show, which
+			// looked identical to the homepage while the URL still read /{uid} —
+			// send the user home so URL and UI agree, carrying the error and the
+			// attempted UID so the landing form can surface both.
+			goto('/', { replaceState: true, state: { searchError: e.message, searchUid: id } });
 		}
 	}
 
@@ -117,9 +119,7 @@
 	});
 </script>
 
-{#if error}
-	<Hero {error} value={uid} />
-{:else if profile}
+{#if profile}
 	<nav class="view-tabs show" role="tablist" aria-label="Showcase section">
 		<button aria-pressed={view === 'battle'} onclick={() => setView('battle')}>
 			Battle Records Showcase
