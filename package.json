@@ -1,0 +1,21 @@
+{
+  "name": "the-express-log",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite dev",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "@sveltejs/adapter-vercel": "^6.3.4",
+    "@sveltejs/kit": "^2.70.1",
+    "@sveltejs/vite-plugin-svelte": "^7.2.0",
+    "svelte": "^5.56.7",
+    "vite": "^8.1.5"
+  },
+  "allowScripts": {
+    "esbuild@0.28.1": true
+  }
+}
