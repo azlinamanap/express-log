@@ -6,6 +6,7 @@
 	import TraceTip from '$lib/components/TraceTip.svelte';
 	import LoadingOverlay from '$lib/components/LoadingOverlay.svelte';
 	import SearchForm from '$lib/components/SearchForm.svelte';
+	import MusicPlayer from '$lib/components/MusicPlayer.svelte';
 
 	let { children } = $props();
 </script>
@@ -26,10 +27,11 @@
 
 	<footer>
 		Data: <a href="https://api.mihomo.me" rel="noopener">Mihomo API</a> · Assets:
-		<a href="https://github.com/Mar-7th/StarRailRes" rel="noopener">StarRailRes</a> · Not affiliated
+		<a href="https://github.com/Mar-7th/StarRailRes" rel="noopener">StarRailRes</a> · Music by HOYO-MiX · Not affiliated
 		with HoYoverse.
 	</footer>
 </div>
 
 <LoadingOverlay />
 <TraceTip />
+<MusicPlayer />
