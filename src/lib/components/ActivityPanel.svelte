@@ -3,12 +3,17 @@
 
 	// re-renders reactively when either source lands (sr_activity leaves the
 	// Treasures Lightward theme names blank; they're patched from tlData)
-	let { activityInfo = null, tlData = null } = $props();
+	// `unavailable` = the Mihomo activity feed couldn't be reached
+	let { activityInfo = null, tlData = null, unavailable = false } = $props();
 
 	let rows = $derived(activityInfo ? renderActivityRows(activityInfo, tlData || {}) : '');
 </script>
 
-<section class="pc-sec" id="activity" class:show={!!rows}>
+<section class="pc-sec" id="activity" class:show={!!rows || unavailable}>
 	<h4>✦ Trailblaze Activity</h4>
-	<div id="activity-rows">{@html rows}</div>
+	{#if rows}
+		<div id="activity-rows">{@html rows}</div>
+	{:else}
+		<div class="act-note">Recent activity is currently unavailable.</div>
+	{/if}
 </section>

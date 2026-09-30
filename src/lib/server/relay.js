@@ -5,11 +5,12 @@ import { jsonResponse } from './http.js';
  *  endpoint frequently returns a 500 "Queue timeout", so retry that
  *  specific failure before giving up. Retries are trimmed vs. the Python
  *  version (2 attempts, 2s backoff) to stay within the serverless
- *  wall-clock limit. */
+ *  wall-clock limit. The timeout is kept short so a failed Mihomo call
+ *  still leaves room for the Enka fallback (enka.js) within maxDuration. */
 const UPSTREAM = 'https://api.mihomo.me/';
 const RETRIES = 2;
 const RETRY_DELAY = 2000;
-const TIMEOUT = 15000;
+const TIMEOUT = 10000;
 
 export async function relay(endpoint, key) {
 	const url = `${UPSTREAM}${endpoint}/${key}`;

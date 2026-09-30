@@ -127,32 +127,111 @@
   }
   .notice.show { display: block; }
   .notice b { color: var(--ink); }
-  /* centered full-page overlay holding the loading bar while a UID fetches */
-  .loading-overlay {
+  /* full-page loading screen: fades in over the current page before
+     navigating to a profile, then fades out to reveal the showcase.
+     The fade length is mirrored by SCREEN_FADE_MS in loader.js. */
+  .loading-screen {
     position: fixed; inset: 0;
-    display: none;
+    display: flex;
     align-items: center; justify-content: center;
-    background: rgba(9, 11, 20, 0.72);
-    backdrop-filter: blur(3px);
+    padding: 0 16px;
+    background:
+      radial-gradient(1100px 500px at 80% -10%, rgba(96, 84, 148, 0.22), transparent 60%),
+      radial-gradient(900px 420px at 5% 8%, rgba(45, 84, 128, 0.18), transparent 55%),
+      var(--space);
     z-index: 50;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.45s ease, visibility 0s linear 0.45s;
   }
-  .loading-overlay.show { display: flex; }
-  .loading-box {
-    width: min(420px, 82vw);
-    padding: 26px 28px;
-    background: var(--panel);
-    border: 1px solid var(--line-dim);
-    border-radius: 14px;
-    box-shadow: 0 18px 50px rgba(0, 0, 0, 0.5);
+  .loading-screen.show {
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 0.45s ease;
+  }
+  /* laid out like the in-game loading screen: the clip (sized like its
+     window strip, ~48% of the viewport width) sits dead center, the gold
+     rule hangs just below it, and the label + bar sit about three-quarters
+     of the way down, where the game puts its caption. Only the clip is in
+     flow, so flex centering centers the clip itself. */
+  .loading-stage {
+    position: relative;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+  }
+  .loading-info {
+    position: absolute;
+    left: 0; right: 0;
+    margin-inline: auto;
+    /* spans the same width as the clip so the bar lines up with the windows */
+    width: min(clamp(280px, 48vw, 920px), calc(100% - 32px));
+    /* never closer to center than the clip + rule can reach */
+    top: max(74%, calc(50% + 190px));
+  }
+  .loading-stage,
+  .loading-info {
+    transform: translateY(10px) scale(0.985);
+    transition: transform 0.6s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .loading-screen.show .loading-stage,
+  .loading-screen.show .loading-info { transform: none; }
+  @media (prefers-reduced-motion: reduce) {
+    .loading-screen, .loading-screen.show, .loading-stage, .loading-info { transition: none; }
+  }
+  /* looping Pom-Pom train-window strip shown above the label */
+  .loading-anim {
+    display: block;
+    width: clamp(280px, 48vw, 920px);
+    max-width: 100%;
+    aspect-ratio: 822 / 152;
+    border-radius: 8px;
+    pointer-events: none;
+    /* held invisible (space still reserved) until the clip can play through,
+       so a first visit never shows a stalled frame */
+    opacity: 0;
+    transition: opacity 0.35s ease;
+  }
+  .loading-anim.ready { opacity: 1; }
+  /* in-game style gold rule under the clip: a hairline fading out at both
+     ends, slightly wider than the clip, with a small cup-and-ring ornament
+     hanging from its middle. The pseudo-element lines sit at the height of
+     the ornament's arc ends (y=2 in the SVG). */
+  .loading-divider {
+    position: absolute;
+    top: calc(100% + clamp(14px, 2vw, 38px));
+    left: 0; right: 0;
+    margin-inline: auto;
+    display: flex;
+    align-items: flex-start;
+    width: clamp(300px, 54vw, 1040px);
+    max-width: 100%;
+    opacity: 0.75;
+  }
+  .loading-divider::before,
+  .loading-divider::after {
+    content: "";
+    flex: 1;
+    height: 1.5px;
+    margin-top: 1.25px;
+  }
+  .loading-divider::before { background: linear-gradient(90deg, transparent, var(--gold) 40%); }
+  .loading-divider::after  { background: linear-gradient(90deg, var(--gold) 60%, transparent); }
+  .loading-divider svg {
+    flex: none;
+    fill: none;
+    stroke: var(--gold);
+    stroke-width: 1.5;
+    stroke-linecap: round;
   }
   .loading-label {
-    font-size: 14px;
+    font-size: 16px;
     color: var(--ink-2);
-    margin-bottom: 16px;
+    margin-bottom: 26px;
     text-align: center;
   }
   .loading-label b { color: var(--ink); }
-  /* game-style percentage progress bar shown while a showcase is fetching */
+  /* game-style progress bar shown while a showcase is fetching */
   .loadbar {
     display: flex;
     align-items: center;
@@ -189,15 +268,6 @@
   @keyframes loadsheen {
     0%   { transform: translateX(-100%); }
     60%, 100% { transform: translateX(320%); }
-  }
-  .loadbar-pct {
-    font-family: var(--mono);
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--gold-hi);
-    min-width: 42px;
-    text-align: right;
-    font-variant-numeric: tabular-nums;
   }
   @media (prefers-reduced-motion: reduce) {
     .loadbar-track span { transition: none; }
@@ -400,6 +470,15 @@
   #activity .act-row { font-size: 13px; gap: 9px; padding: 6px 0; }
   #activity .act-row img { width: 24px; height: 24px; padding: 3px; }
   #activity .act-row .when { font-size: 11px; }
+  /* shown in place of the rows when the Mihomo activity feed is down */
+  .act-note {
+    background: rgba(0, 0, 0, 0.28);
+    border: 1px solid var(--line-dim);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 13px;
+    color: var(--muted);
+  }
 
   .roster {
     background: var(--panel);
@@ -879,9 +958,10 @@
   /* left column matches the profile column above, so the divider lines up
      with the gap between the profile and character sections */
   /* fixed height so the card doesn't jump between characters — locked to
-     Mortenax Blade's fully-built E0 sheet (the tallest reference), measured
-     at the 1200px desktop layout */
-  .detail.show { display: grid; grid-template-columns: 400px 1fr; height: 907px; }
+     Pearl's sheet on UID 800333171 (13 stat rows, the tallest reference;
+     Mortenax Blade's 907px clipped her bottom relic row), measured at the
+     1200px desktop layout */
+  .detail.show { display: grid; grid-template-columns: 400px 1fr; height: 970px; }
   @media (max-width: 820px) { .detail.show { grid-template-columns: 1fr; height: auto; } }
 
   .left-col { border-right: 1px solid var(--line); display: flex; flex-direction: column; }

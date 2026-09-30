@@ -3,7 +3,7 @@
 	import { placeFrame } from '$lib/frame.js';
 	import ActivityPanel from './ActivityPanel.svelte';
 
-	let { player, cosmetics = null, activityInfo = null, tlData = null } = $props();
+	let { player, cosmetics = null, activityInfo = null, activityUnavailable = false, tlData = null } = $props();
 
 	let frameEl = $state(null);
 	let uidLabel = $state('');
@@ -68,5 +68,5 @@
 			<div class="pc-sig">{p.signature}</div>
 		</section>
 	{/if}
-	<ActivityPanel {activityInfo} {tlData} />
+	<ActivityPanel {activityInfo} {tlData} unavailable={activityUnavailable} />
 </aside>

@@ -30,31 +30,36 @@ export async function fetchProfile(uid) {
    split, head frame, personal card, and birthday. Best-effort. The parsed
    character list dedupes a character shared by both slots, so we keep the two
    id sets separate to place shared characters in both rosters. */
-export async function fetchRaw(uid) {
+export function rawFromDetail(di) {
 	const assistIds = new Set();
 	const displayIds = new Set();
+	(di?.assistAvatarList || []).forEach((a) => assistIds.add(String(a.avatarId)));
+	(di?.avatarDetailList || []).forEach((a) => displayIds.add(String(a.avatarId)));
+	return { di: di || null, assistIds, displayIds };
+}
+
+export async function fetchRaw(uid) {
 	try {
 		const res = await fetch(`/api/raw/${uid}`);
-		if (!res.ok) return { di: null, assistIds, displayIds };
-		const raw = JSON.parse(clean(await res.text()));
-		(raw.detailInfo?.assistAvatarList || []).forEach((a) => assistIds.add(String(a.avatarId)));
-		(raw.detailInfo?.avatarDetailList || []).forEach((a) => displayIds.add(String(a.avatarId)));
-		return { di: raw.detailInfo || null, assistIds, displayIds };
+		if (!res.ok) return rawFromDetail(null);
+		return rawFromDetail(JSON.parse(clean(await res.text())).detailInfo);
 	} catch {
-		return { di: null, assistIds, displayIds };
+		return rawFromDetail(null);
 	}
 }
 
 /* Best-effort activity feed — its endpoint queue-times-out more often than
-   the showcase one, so a failure just leaves the panel hidden. */
+   the showcase one. Only Mihomo serves it (Enka has no equivalent), so a
+   failed fetch is reported as `unavailable` for the panel to say so, while
+   a profile with no recent activity just leaves the panel hidden. */
 export async function fetchActivity(uid) {
 	try {
 		const res = await fetch(`/api/activity/${uid}?lang=en`);
-		if (!res.ok) return null;
+		if (!res.ok) return { info: null, unavailable: true };
 		const { info } = JSON.parse(clean(await res.text()));
-		return info?.length ? info : null;
+		return { info: info?.length ? info : null, unavailable: false };
 	} catch {
-		return null;
+		return { info: null, unavailable: true };
 	}
 }
 

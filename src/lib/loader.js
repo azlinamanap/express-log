@@ -11,6 +11,18 @@ let target = 0;
 
 const paint = () => loading.update((s) => ({ ...s, pct }));
 
+/* Matches the .loading-screen opacity transition in app.css. */
+const SCREEN_FADE_MS = 450;
+
+/* Fade the loading screen in over the current page, resolving once it is
+   fully opaque so the route can swap underneath without a visible jump.
+   startLoad() then takes over the bar when the profile page mounts. */
+export function coverLoad(uid) {
+	loading.set({ active: true, pct: 0, label: `Fetching showcase for UID <b>${uid}</b>…` });
+	const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+	return new Promise((resolve) => setTimeout(resolve, reduced ? 0 : SCREEN_FADE_MS));
+}
+
 export function startLoad(uid) {
 	clearInterval(timer);
 	pct = 0;
@@ -33,7 +45,7 @@ export function stopLoad() {
 }
 
 /* Drive the bar to 100% and hold briefly so the fill visibly completes
-   before the overlay is hidden. */
+   before the loading screen fades out. */
 export function finishLoad() {
 	clearInterval(timer);
 	return new Promise((resolve) => {

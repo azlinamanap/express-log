@@ -2,7 +2,7 @@
 	import { goto } from '$app/navigation';
 	import { showcase } from '$lib/stores.js';
 	import { startLoad, bumpLoad, finishLoad, stopLoad, preloadImages } from '$lib/loader.js';
-	import { fetchProfile, fetchRaw, fetchActivity, fetchBattle } from '$lib/api.js';
+	import { fetchProfile, fetchRaw, rawFromDetail, fetchActivity, fetchBattle } from '$lib/api.js';
 	import { characterImageUrls } from '$lib/render.js';
 	import { renderTLOverview, renderCSOverview } from '$lib/battle.js';
 	import ProfileCard from '$lib/components/ProfileCard.svelte';
@@ -21,6 +21,7 @@
 	let assistIds = $state(new Set());
 	let displayIds = $state(new Set());
 	let activityInfo = $state(null);
+	let activityUnavailable = $state(false);
 	let tlData = $state({ aa: {}, moc: {}, pf: {}, as: {} });
 	let csData = $state({});
 
@@ -85,6 +86,7 @@
 		assistIds = new Set();
 		displayIds = new Set();
 		activityInfo = null;
+		activityUnavailable = false;
 		tlData = { aa: {}, moc: {}, pf: {}, as: {} };
 		csData = {};
 		currentChar = null;
@@ -99,10 +101,13 @@
 			if (token !== runToken) return;
 			bumpLoad(45);
 			// raw profile, activity, and battle records load together so the
-			// page appears once, fully populated, rather than panel by panel
+			// page appears once, fully populated, rather than panel by panel.
+			// A profile served by the Enka fallback means Mihomo is down: it
+			// already carries the raw profile, and the activity feed is
+			// Mihomo-only, so don't wait on either.
 			const [raw, act, battle] = await Promise.all([
-				fetchRaw(id),
-				fetchActivity(id),
+				p.source === 'enka' ? rawFromDetail(p.raw) : fetchRaw(id),
+				p.source === 'enka' ? { info: null, unavailable: true } : fetchActivity(id),
 				fetchBattle(id)
 			]);
 			if (token !== runToken) return;
@@ -111,7 +116,8 @@
 			cosmetics = raw.di;
 			assistIds = raw.assistIds;
 		displayIds = raw.displayIds;
-			activityInfo = act;
+			activityInfo = act.info;
+			activityUnavailable = act.unavailable;
 			tlData = battle.tlData;
 			csData = battle.csData;
 			bumpLoad(60);
@@ -154,7 +160,7 @@
 	</nav>
 
 	<div class="showcase show" id="player">
-		<ProfileCard player={profile.player} {cosmetics} {activityInfo} {tlData} />
+		<ProfileCard player={profile.player} {cosmetics} {activityInfo} {activityUnavailable} {tlData} />
 		<div class="pane" style:--enter-x={enterX}>
 			<Roster
 				characters={profile.characters}

@@ -1,14 +1,22 @@
 <script>
 	import '../app.css';
-	import { goto } from '$app/navigation';
+	import { goto, onNavigate } from '$app/navigation';
 	import { page } from '$app/state';
 	import { showcase } from '$lib/stores.js';
+	import { coverLoad } from '$lib/loader.js';
 	import TraceTip from '$lib/components/TraceTip.svelte';
-	import LoadingOverlay from '$lib/components/LoadingOverlay.svelte';
+	import LoadingScreen from '$lib/components/LoadingScreen.svelte';
 	import SearchForm from '$lib/components/SearchForm.svelte';
 	import MusicPlayer from '$lib/components/MusicPlayer.svelte';
 
 	let { children } = $props();
+
+	// heading to a different profile: fade the loading screen in over the
+	// current page first, and only swap routes once it fully covers it
+	onNavigate((nav) => {
+		const uid = nav.to?.route.id === '/[uid]' ? nav.to.params?.uid : null;
+		if (uid && uid !== nav.from?.params?.uid) return coverLoad(uid);
+	});
 </script>
 
 <svelte:head>
@@ -32,6 +40,6 @@
 	</footer>
 </div>
 
-<LoadingOverlay />
+<LoadingScreen />
 <TraceTip />
 <MusicPlayer />
