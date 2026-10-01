@@ -102,11 +102,11 @@
 			bumpLoad(45);
 			// raw profile, activity, and battle records load together so the
 			// page appears once, fully populated, rather than panel by panel.
-			// A profile served by the Enka fallback means Mihomo is down: it
-			// already carries the raw profile, and the activity feed is
-			// Mihomo-only, so don't wait on either.
+			// The profile usually carries the raw profile already. One served
+			// by the Enka fallback means Mihomo is down, and the activity feed
+			// is Mihomo-only, so don't wait on it.
 			const [raw, act, battle] = await Promise.all([
-				p.source === 'enka' ? rawFromDetail(p.raw) : fetchRaw(id),
+				p.raw ? rawFromDetail(p.raw) : fetchRaw(id),
 				p.source === 'enka' ? { info: null, unavailable: true } : fetchActivity(id),
 				fetchBattle(id)
 			]);

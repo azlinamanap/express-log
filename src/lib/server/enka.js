@@ -24,7 +24,7 @@ const ENKA_ERRORS = {
 };
 
 let index = null; // { at, promise }
-function loadIndex() {
+export function loadIndex() {
 	if (index && Date.now() - index.at < INDEX_TTL) return index.promise;
 	const promise = Promise.all(
 		INDEX_FILES.map((f) =>
@@ -361,6 +361,37 @@ function rawProfile(di) {
 		detailInfo: { ...di, assistAvatarList: assist, avatarDetailList: display },
 		source: 'enka'
 	};
+}
+
+/** Mihomo's sr_info_parsed silently drops characters its own data doesn't
+ *  know yet (new releases, until Mihomo updates), though its raw sr_info
+ *  still lists them in the same game format Enka uses. Rebuild any such
+ *  character from its raw entry, keeping sr_info_parsed's order, and carry
+ *  the raw detailInfo along so the client can skip /api/raw. The index is
+ *  English-only, matching the client's lang=en. Best-effort: any failure
+ *  returns `parsedRes` untouched. */
+export async function withMissingCharacters(parsedRes, rawRes) {
+	if (!parsedRes.ok || !rawRes.ok) return parsedRes;
+	try {
+		const clean = (text) => JSON.parse(text.replace(/[\u0000-\u001f]/g, ' '));
+		const parsed = clean(await parsedRes.clone().text());
+		const di = clean(await rawRes.text()).detailInfo;
+		const byId = new Map((parsed.characters || []).map((c) => [String(c.id), c]));
+		const rawAvatars = [...(di?.assistAvatarList || []), ...(di?.avatarDetailList || [])];
+		const missing = rawAvatars.filter((a) => !byId.has(String(a.avatarId)));
+		const ix = missing.length ? await loadIndex() : null;
+		const seen = new Set();
+		const characters = rawAvatars
+			.filter((a) => !seen.has(a.avatarId) && seen.add(a.avatarId))
+			.map((a) => byId.get(String(a.avatarId)) ?? parseCharacter(ix, a))
+			.filter(Boolean);
+		// anything Mihomo parsed that the raw lists lack keeps its place at the end
+		for (const c of byId.values()) if (!characters.includes(c)) characters.push(c);
+		return jsonResponse(200, JSON.stringify({ ...parsed, characters, raw: di }));
+	} catch (e) {
+		console.error('filling missing characters failed:', e);
+		return parsedRes;
+	}
 }
 
 /** Return `primary` (a Mihomo relay Response) if it succeeded, otherwise
