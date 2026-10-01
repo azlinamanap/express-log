@@ -1227,6 +1227,15 @@
     flex-direction: column;
     justify-content: space-evenly;
   }
+  .relics .none {
+    grid-column: 1 / -1;
+    padding: 18px 12px;
+    border: 1px dashed var(--line-dim);
+    border-radius: 9px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 14px;
+  }
   /* icon + main stat + level all in one row up top; subs run full-width below */
   .relic .top { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
   .relic .top img { width: 48px; height: 48px; flex: none; }

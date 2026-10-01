@@ -264,7 +264,8 @@ export function renderLightCone(lc) {
 export function renderRelics(c) {
 	// relic.type: 1 Head, 2 Hands, 3 Body, 4 Feet, 5 Planar Sphere, 6 Link Rope
 	const RELIC_SLOT_ORDER = [1, 3, 6, 2, 4, 5];
-	return (c.relics || [])
+	if (!c.relics?.length) return `<div class="none">No relics equipped</div>`;
+	return c.relics
 		.slice()
 		.sort((a, b) => RELIC_SLOT_ORDER.indexOf(a.type) - RELIC_SLOT_ORDER.indexOf(b.type))
 		.map((r) => {
