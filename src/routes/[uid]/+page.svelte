@@ -4,6 +4,7 @@
 	import { startLoad, bumpLoad, finishLoad, stopLoad, preloadImages } from '$lib/loader.js';
 	import { fetchProfile, fetchRaw, rawFromDetail, fetchActivity, fetchBattle } from '$lib/api.js';
 	import { characterImageUrls } from '$lib/render.js';
+	import { playTabSound, playCharSound, playModeSound, preloadSounds } from '$lib/sfx.js';
 	import { renderTLOverview, renderCSOverview } from '$lib/battle.js';
 	import ProfileCard from '$lib/components/ProfileCard.svelte';
 	import Roster from '$lib/components/Roster.svelte';
@@ -59,6 +60,7 @@
 	// switching top tabs resets the drilled-in selection in both showcases,
 	// with the slide direction set by the tab-order delta
 	function setView(v) {
+		if (v !== view) playTabSound(v);
 		const dir = prevView && prevView !== v ? VIEW_ORDER.indexOf(v) - VIEW_ORDER.indexOf(prevView) : 0;
 		enterX = (dir > 0 ? 28 : dir < 0 ? -28 : 0) + 'px';
 		prevView = v;
@@ -67,8 +69,14 @@
 		tlKind = null;
 	}
 
+	function selectChar(i) {
+		if (i !== currentChar) playCharSound();
+		currentChar = i;
+	}
+
 	// pick a Treasures Lightward mode, resolving the best cycle up front
 	function pickMode(k) {
+		if (k !== tlKind) playModeSound();
 		tlKind = k;
 		if (k === 'aa') {
 			tlCycle = '1';
@@ -125,6 +133,7 @@
 			await preloadImages(characterImageUrls(p.characters), 60, 98);
 			if (token !== runToken) return;
 			showcase.set(true);
+			preloadSounds();
 			await finishLoad();
 		} catch (e) {
 			if (token !== runToken) return;
@@ -168,7 +177,7 @@
 				{displayIds}
 				selected={currentChar}
 				hidden={view !== 'chars'}
-				onselect={(i) => (currentChar = i)}
+				onselect={selectChar}
 			/>
 			{#if view === 'battle' && !hasEndgame}
 				<div class="notice show">No battle records are available for this profile.</div>

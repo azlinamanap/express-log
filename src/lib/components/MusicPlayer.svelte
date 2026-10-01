@@ -1,5 +1,6 @@
 <script>
 	import { onMount } from 'svelte';
+	import { soundOn } from '$lib/stores.js';
 
 	// Background music. Drop an audio file at static/music.mp3 (served from
 	// /music.mp3) to enable it — no file just means the button no-ops.
@@ -9,7 +10,7 @@
 	// arm a one-shot listener to begin on the first click/keypress instead. The
 	// on/off choice is remembered across visits.
 	const SRC = '/music.mp3';
-	const VOLUME = 0.32;
+	const VOLUME = 0.39;
 
 	let audio;
 	let on = $state(false);
@@ -33,6 +34,7 @@
 
 	async function enable() {
 		on = true;
+		soundOn.set(true);
 		localStorage.setItem('music', 'on');
 		try {
 			await audio.play();
@@ -44,6 +46,7 @@
 
 	function disable() {
 		on = false;
+		soundOn.set(false);
 		localStorage.setItem('music', 'off');
 		disarm();
 		audio.pause();

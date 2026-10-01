@@ -7,3 +7,7 @@ export const showcase = writable(false);
 
 /** Loading-overlay state, driven by the loader engine (loader.js). */
 export const loading = writable({ active: false, pct: 0, label: '' });
+
+/** Whether site sound is on — set by the music toggle (MusicPlayer), which
+ *  also gates the UI sound effects (sfx.js). */
+export const soundOn = writable(false);
