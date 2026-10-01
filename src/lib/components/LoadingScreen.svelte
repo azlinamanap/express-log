@@ -63,7 +63,6 @@
 		</div>
 	</div>
 	<div class="loading-info">
-		<div class="loading-label">{@html $loading.label}</div>
 		<div class="loadbar">
 			<div class="loadbar-track"><span style="width:{$loading.pct}%"></span></div>
 		</div>

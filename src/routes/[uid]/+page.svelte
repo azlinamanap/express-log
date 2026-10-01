@@ -1,4 +1,5 @@
 <script>
+	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { showcase } from '$lib/stores.js';
 	import { startLoad, bumpLoad, finishLoad, stopLoad, preloadImages } from '$lib/loader.js';
@@ -103,7 +104,7 @@
 		view = 'chars';
 		prevView = null;
 		showcase.set(false);
-		startLoad(id);
+		startLoad();
 		try {
 			const p = await fetchProfile(id);
 			if (token !== runToken) return;
@@ -151,6 +152,14 @@
 	$effect(() => {
 		const id = uid;
 		run(id);
+	});
+
+	// leaving the profile mid-load (the header stays clickable above the
+	// loading screen): drop the in-flight run so it can't finish or redirect
+	// later, and clear the screen
+	onMount(() => () => {
+		runToken++;
+		stopLoad();
 	});
 </script>
 

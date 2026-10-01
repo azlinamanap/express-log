@@ -1,12 +1,11 @@
 import { writable } from 'svelte/store';
 
-/** Whether a profile showcase is on screen — the layout uses it to add
- *  `.has-showcase` (which moves the search form into the header) and to show
- *  the compact header form. */
+/** Whether a profile showcase is on screen — the layout waits for it before
+ *  sliding the profile header from the homepage masthead's spot into place. */
 export const showcase = writable(false);
 
 /** Loading-overlay state, driven by the loader engine (loader.js). */
-export const loading = writable({ active: false, pct: 0, label: '' });
+export const loading = writable({ active: false, pct: 0 });
 
 /** Whether site sound is on — set by the music toggle (MusicPlayer), which
  *  also gates the UI sound effects (sfx.js). */

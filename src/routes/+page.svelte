@@ -1,7 +1,9 @@
 <script>
 	import { page } from '$app/state';
 	import { showcase } from '$lib/stores.js';
-	import Hero from '$lib/components/Hero.svelte';
+	import BoardingPass from '$lib/components/BoardingPass.svelte';
+
+	let { data } = $props();
 
 	// landing screen: no showcase
 	$effect(() => {
@@ -15,4 +17,4 @@
 	let value = $derived(page.state.searchUid ?? '');
 </script>
 
-<Hero {error} {value} />
+<BoardingPass heading={data.heading} {error} {value} />

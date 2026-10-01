@@ -17,17 +17,17 @@ const SCREEN_FADE_MS = 450;
 /* Fade the loading screen in over the current page, resolving once it is
    fully opaque so the route can swap underneath without a visible jump.
    startLoad() then takes over the bar when the profile page mounts. */
-export function coverLoad(uid) {
-	loading.set({ active: true, pct: 0, label: `Fetching showcase for UID <b>${uid}</b>…` });
+export function coverLoad() {
+	loading.set({ active: true, pct: 0 });
 	const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 	return new Promise((resolve) => setTimeout(resolve, reduced ? 0 : SCREEN_FADE_MS));
 }
 
-export function startLoad(uid) {
+export function startLoad() {
 	clearInterval(timer);
 	pct = 0;
 	target = 20;
-	loading.set({ active: true, pct: 0, label: `Fetching showcase for UID <b>${uid}</b>…` });
+	loading.set({ active: true, pct: 0 });
 	timer = setInterval(() => {
 		pct = Math.min(target - 0.5, pct + Math.max(0.3, (target - pct) * 0.06));
 		paint();

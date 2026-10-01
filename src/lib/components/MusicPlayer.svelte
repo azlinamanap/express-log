@@ -1,76 +1,19 @@
 <script>
 	import { onMount } from 'svelte';
 	import { soundOn } from '$lib/stores.js';
+	import { initMusic, toggleMusic } from '$lib/music.js';
 
-	// Background music. Drop an audio file at static/music.mp3 (served from
-	// /music.mp3) to enable it — no file just means the button no-ops.
-	//
-	// Browsers refuse to start sound before the first user gesture, so when the
-	// saved preference is "on" we try to play immediately and, if that's blocked,
-	// arm a one-shot listener to begin on the first click/keypress instead. The
-	// on/off choice is remembered across visits.
-	const SRC = '/music.mp3';
-	const VOLUME = 0.39;
+	// Floating music toggle; the audio itself lives in $lib/music.js.
+	let on = $derived($soundOn);
 
-	let audio;
-	let on = $state(false);
-
-	let armed = false;
-	function arm() {
-		if (armed) return;
-		armed = true;
-		window.addEventListener('pointerdown', onGesture);
-		window.addEventListener('keydown', onGesture);
-	}
-	function disarm() {
-		armed = false;
-		window.removeEventListener('pointerdown', onGesture);
-		window.removeEventListener('keydown', onGesture);
-	}
-	function onGesture() {
-		disarm();
-		if (on) audio.play().catch(() => {});
-	}
-
-	async function enable() {
-		on = true;
-		soundOn.set(true);
-		localStorage.setItem('music', 'on');
-		try {
-			await audio.play();
-		} catch {
-			// autoplay blocked before any interaction — resume on the next gesture
-			arm();
-		}
-	}
-
-	function disable() {
-		on = false;
-		soundOn.set(false);
-		localStorage.setItem('music', 'off');
-		disarm();
-		audio.pause();
-	}
-
-	function toggle() {
-		on ? disable() : enable();
-	}
-
-	onMount(() => {
-		audio.volume = VOLUME;
-		// default to on for first-time visitors; honour an explicit "off"
-		if (localStorage.getItem('music') !== 'off') enable();
-		return disarm;
-	});
+	onMount(initMusic);
 </script>
-
-<audio bind:this={audio} src={SRC} loop preload="auto"></audio>
 
 <button
 	type="button"
 	class="music-toggle"
 	class:on
-	onclick={toggle}
+	onclick={toggleMusic}
 	aria-pressed={on}
 	aria-label={on ? 'Mute background music' : 'Play background music'}
 	title={on ? 'Mute music' : 'Play music'}
@@ -131,5 +74,20 @@
 	.music-toggle svg {
 		width: 22px;
 		height: 22px;
+	}
+	/* phones: smaller and tucked into the corner, clear of the homepage
+	   masthead, which starts 36px down at this width (profiles render at a
+	   fixed 1200px viewport, so this only reaches the homepage) */
+	@media (max-width: 640px) {
+		.music-toggle {
+			top: 6px;
+			right: 8px;
+			width: 30px;
+			height: 30px;
+		}
+		.music-toggle svg {
+			width: 16px;
+			height: 16px;
+		}
 	}
 </style>
