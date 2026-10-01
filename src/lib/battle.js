@@ -345,6 +345,8 @@ export function renderActivityRows(activityInfo, tlData) {
 				const theme = themeForClear(ACT_MODES[gap[1]], parseInt(when) || 0, tlData);
 				what = theme ? `${what.trim()} ${theme}` : what.replace(/:\s*$/, '');
 			}
+			// sr_activity never names the Anomaly Arbitration stage
+			what = what.replace(/^(Completed Anomaly Arbitration):\s*$/, '$1');
 			return `<div class="act-row">
         <img src="${ASSETS + fixActivityIcon(a.content.icon)}" alt="">
         <span>${what}</span>
