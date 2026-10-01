@@ -21,7 +21,7 @@
 	<input
 		inputmode="numeric"
 		pattern="[0-9]{'{'}9,10{'}'}"
-		placeholder="UID · e.g. 800333171"
+		placeholder="UID · e.g. 800579959"
 		required
 		bind:value={uid}
 	/>
