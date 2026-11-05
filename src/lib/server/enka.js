@@ -8,6 +8,8 @@ import { jsonResponse } from './http.js';
 const ENKA = 'https://enka.network/api/hsr/uid/';
 const UA = 'TheExpressLog/1.0 (+https://expresslog.vercel.app)';
 const INDEX = 'https://raw.githubusercontent.com/Mar-7th/StarRailRes/master/index_min/en/';
+// StarRailRes has no outfit art; Enka hosts it per dressedSkinId
+const ENKA_SKIN_ART = 'https://enka.network/ui/hsr/SpriteOutput/AvatarDrawCard/AvatarSkin/';
 const INDEX_FILES = [
 	'characters', 'character_promotions', 'character_ranks', 'character_skills',
 	'character_skill_trees', 'light_cones', 'light_cone_promotions', 'light_cone_ranks',
@@ -284,7 +286,7 @@ function parseCharacter(ix, a) {
 		promotion,
 		icon: ch.icon,
 		preview: ch.preview,
-		portrait: ch.portrait,
+		portrait: a.dressedSkinId ? `${ENKA_SKIN_ART}${a.dressedSkinId}.png` : ch.portrait,
 		rank_icons: ch.ranks.map((id) => ix.character_ranks[id]?.icon).filter(Boolean),
 		path: ix.paths[ch.path],
 		element: ix.elements[ch.element],

@@ -40,7 +40,8 @@
 <article class="detail show" class:view-hidden={hidden}>
 	<div class="left-col">
 		<div class="stage" style:--aura={aura}>
-			<img class="portrait" src={ASSETS + c.portrait} alt={c.name} />
+			<!-- portrait is an absolute Enka URL when an outfit is equipped -->
+			<img class="portrait" src={/^https?:/.test(c.portrait) ? c.portrait : ASSETS + c.portrait} alt={c.name} />
 			<div class="badges">
 				<img src={ASSETS + c.element.icon} alt={c.element.name} title={c.element.name} />
 				<img src={ASSETS + c.path.icon} alt={c.path.name} title={'Path of ' + c.path.name} />
